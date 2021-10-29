@@ -6,11 +6,11 @@
   <meta name="renderer" content="webkit">
   <meta http-equiv="X-UA-Compatible" content="IE=edge" >
   <link rel="dns-prefetch" href="http://example.com">
-  <title>墓碣茶室</title>
+  <title>Tag: 刷题 | 墓碣茶室</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   <meta property="og:type" content="website">
 <meta property="og:title" content="墓碣茶室">
-<meta property="og:url" content="http://example.com/index.html">
+<meta property="og:url" content="http://example.com/tags/%E5%88%B7%E9%A2%98/index.html">
 <meta property="og:site_name" content="墓碣茶室">
 <meta property="og:locale" content="en_US">
 <meta property="article:author" content="Wandleshen">
@@ -160,55 +160,34 @@
           <div id="js-content" class="content-ll">
             
   
-    <article id="post-hilbert" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
+  
     
-      <header class="article-header">
-        
+    
+      
+      
+      <section class="archives-wrap">
+        <div class="archive-year-wrap">
+          <a href="/archives/2021" class="archive-year">2021</a>
+        </div>
+        <div class="archives">
+    
+    <article class="archive-article archive-type-post">
+  <div class="archive-article-inner">
+    <header class="archive-article-header">
+      	<div class="article-meta">
+	      	<a href="/2021/10/29/hilbert/" class="archive-article-date">
+  	<time datetime="2021-10-29T03:42:07.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-10-29</time>
+</a>
+        </div>
+    	 
   
     <h1 itemprop="name">
-      <a class="article-title" href="/2021/10/29/hilbert/">Condition Number for Hilbert Matrix</a>
+      <a class="archive-article-title" href="/2021/10/29/hilbert/">Condition Number for Hilbert Matrix</a>
     </h1>
   
 
-        
-        <a href="/2021/10/29/hilbert/" class="archive-article-date">
-  	<time datetime="2021-10-29T03:42:07.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-10-29</time>
-</a>
-        
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>最近数值分析课遇到一个计算希尔伯特矩阵条件数随维数变化关系情况的问题，在此对其迭代解法的程序实现做一些小小的讨论</p>
-<h2 id="希尔伯特矩阵"><a href="#希尔伯特矩阵" class="headerlink" title="希尔伯特矩阵"></a>希尔伯特矩阵</h2><p><a target="_blank" rel="noopener" href="https://zh.wikipedia.org/zh-hans/%E5%B8%8C%E5%B0%94%E4%BC%AF%E7%89%B9%E7%9F%A9%E9%98%B5">希尔伯特矩阵</a>是一种系数都是单位分数的方块矩阵，具体来说希尔伯特矩阵的第$i$行$j$列元素为：<br>$$<br>H_{ij}=\frac{1}{i+j-1}<br>$$<br>因此代码中可以通过双重循环构造矩阵（Golang实现）</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">genHilbertMatrix</span><span class="params">(n <span class="keyword">int</span>)</span> [][]<span class="title">float64</span></span> &#123;</span><br><span class="line">	H := <span class="built_in">make</span>([][]<span class="keyword">float64</span>, n)</span><br><span class="line">	<span class="keyword">for</span> i := <span class="keyword">range</span> H &#123; <span class="comment">//初始化矩阵</span></span><br><span class="line">		H[i] = <span class="built_in">make</span>([]<span class="keyword">float64</span>, n)</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">for</span> i := <span class="number">0</span>; i &lt; n; i++ &#123;</span><br><span class="line">		<span class="keyword">for</span> j := <span class="number">0</span>; j &lt; n; j++ &#123;</span><br><span class="line">			x := <span class="keyword">float64</span>(i + j + <span class="number">1</span>)</span><br><span class="line">			H[i][j] = <span class="number">1.0</span> / x</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> H</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h2 id="求取最大和最小特征值"><a href="#求取最大和最小特征值" class="headerlink" title="求取最大和最小特征值"></a>求取最大和最小特征值</h2><p>条件数K的定义为，对于任意范式$||·||$和非奇异矩阵$A$，有<br>$$<br>K(A)=\left|A\right|\cdot\left|A^{-1}\right|<br>$$<br>而对于<a target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/%E6%AD%A3%E5%AE%9A%E7%9F%A9%E9%98%B5">正定矩阵</a>，可以证明条件数为<br>$$<br>K(A)=\left|\frac{\lambda_{max}(A)}{\lambda_{min}(A)}\right|<br>$$<br>很明显，希尔伯特矩阵是一个正定矩阵，因此只要求出其最大和最小特征值即可计算出条件数</p>
-<h3 id="最大特征值计算"><a href="#最大特征值计算" class="headerlink" title="最大特征值计算"></a>最大特征值计算</h3><p>这里我们使用幂法进行计算，注意此时的前提条件为<br>$$<br>\left|\lambda_1\right| &gt; \left|\lambda_2\right| \geq \left|\lambda_3\right|\geq \cdots \geq \left|\lambda_n\right|<br>$$<br>我们构造一系列向量序列，有<br>$$<br>\left{<br>\begin{array}{<strong>lr</strong>}<br>\vec{v_0}\in R^n\quad And\quad\vec{v_0}\neq\vec{0} \<br>\vec{v_1}=A\vec{v_0} \<br>\vec{v_{k+1}}=A\vec{v_k}\ (k=0,1,\cdots,n)<br>\end{array}<br>\right.<br>$$<br>可以证明，<br>$$<br>\lim_{k\to\infty}\frac{\left|\vec{v_{k+1}}\right|<em>i}{\left|\vec{v</em>{k}}\right|_i}=\lambda_1<br>$$<br>同时在计算机计算过程中，为了防止数据过大导致的越界， 我们可以对$\vec{v_k}$进行规范化，即令<br>$$<br>\vec{u_k}=\frac{\vec{v_k}}{\left|\vec{v_k}\right|_\infty}<br>$$<br>然后对$\vec{u_k}$进行迭代与规范化操作</p>
-<p>同时，我们可以证明<br>$$<br>\lim_{k\to\infty}\left|\vec{v_k}\right|_\infty=\lambda_1<br>$$<br>因此我们可以得出以下代码来计算最大特征值</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">getMaxLambda</span><span class="params">(mat [][]<span class="keyword">float64</span>, n <span class="keyword">int</span>)</span> <span class="title">float64</span></span> &#123;</span><br><span class="line">	<span class="keyword">const</span> MaxIteration = <span class="number">10000</span></span><br><span class="line">	<span class="keyword">const</span> MaxError = <span class="number">0.00001</span></span><br><span class="line">	v0 := <span class="built_in">make</span>([]<span class="keyword">float64</span>, n) <span class="comment">//生成迭代初始向量</span></span><br><span class="line">	v0[<span class="number">0</span>] = <span class="number">1.0</span></span><br><span class="line">	lambda := <span class="number">0.0</span></span><br><span class="line">	<span class="keyword">for</span> lambda0, counter := <span class="number">1.0</span>, <span class="number">1</span>; math.Abs(lambda-lambda0) &gt; MaxError &amp;&amp; counter &lt; MaxIteration; counter++ &#123; <span class="comment">//迭代边界，次数限制与误差限制</span></span><br><span class="line">		lambda0 = lambda</span><br><span class="line">		u := <span class="built_in">make</span>([]<span class="keyword">float64</span>, n)  <span class="comment">//生成迭代后向量</span></span><br><span class="line">		<span class="keyword">for</span> i := <span class="number">0</span>; i &lt; n; i++ &#123; <span class="comment">//计算u=Av</span></span><br><span class="line">			u[i] = <span class="number">0.0</span></span><br><span class="line">			<span class="keyword">for</span> j := <span class="number">0</span>; j &lt; n; j++ &#123;</span><br><span class="line">				u[i] += mat[i][j] * v0[j]</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">		lambda = <span class="number">0.0</span></span><br><span class="line">		<span class="keyword">for</span> i := <span class="number">0</span>; i &lt; n; i++ &#123; <span class="comment">//找到最大值</span></span><br><span class="line">			<span class="keyword">if</span> lambda &lt; math.Abs(u[i]) &#123;</span><br><span class="line">				lambda = math.Abs(u[i])</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">for</span> i := <span class="number">0</span>; i &lt; n; i++ &#123; <span class="comment">//进行规范化</span></span><br><span class="line">			v0[i] = u[i] / lambda</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> lambda</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h3 id="计算最小特征值"><a href="#计算最小特征值" class="headerlink" title="计算最小特征值"></a>计算最小特征值</h3><p>幂法十分完美地解决了最大特征值的问题，而对于最小特征值，我们可以很自然的想到只要求取$A^{-1}$的最大特征值，其倒数就是原矩阵的最小特征值<br>但这依然有些麻烦，因此我们可以使用$LU$分解绕过对$A$求逆的过程进行迭代，即通过解方程组：<br>$$<br>\left{<br>\begin{array}{<strong>lr</strong>}<br>L\vec{w}=\vec{v} \<br>U\vec{u}=\vec{w} \<br>\end{array}<br>\right.<br>$$<br>即可通过$\vec{v}$得出$\vec{u}$的值</p>
-<h3 id="LU-分解"><a href="#LU-分解" class="headerlink" title="$LU$分解"></a>$LU$分解</h3><p>事实上，将$A$进行初等行变换之后变成一个上三角矩阵，其变换矩阵就是一个下三角矩阵，这就是所谓$LU$分解</p>
-<p>我们可以通过所谓杜尔利特算法进行分解，代码如下：</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">LUDecomposition</span><span class="params">(mat [][]<span class="keyword">float64</span>, n <span class="keyword">int</span>)</span> <span class="params">([][]<span class="keyword">float64</span>, [][]<span class="keyword">float64</span>)</span></span> &#123;</span><br><span class="line">	L, U := <span class="built_in">make</span>([][]<span class="keyword">float64</span>, n), <span class="built_in">make</span>([][]<span class="keyword">float64</span>, n)</span><br><span class="line">	<span class="keyword">for</span> i := <span class="keyword">range</span> mat &#123;</span><br><span class="line">		L[i], U[i] = <span class="built_in">make</span>([]<span class="keyword">float64</span>, n), <span class="built_in">make</span>([]<span class="keyword">float64</span>, n)</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">for</span> i := <span class="number">0</span>; i &lt; n; i++ &#123;</span><br><span class="line">		L[i][i] = <span class="number">1</span></span><br><span class="line">		<span class="keyword">if</span> i == <span class="number">0</span> &#123;</span><br><span class="line">			U[<span class="number">0</span>][<span class="number">0</span>] = mat[<span class="number">0</span>][<span class="number">0</span>]</span><br><span class="line">			<span class="keyword">for</span> j := <span class="number">1</span>; j &lt; n; j++ &#123;</span><br><span class="line">				U[<span class="number">0</span>][j] = mat[<span class="number">0</span>][j]</span><br><span class="line">				L[j][<span class="number">0</span>] = mat[<span class="number">0</span>][j] / U[<span class="number">0</span>][<span class="number">0</span>]</span><br><span class="line">			&#125;</span><br><span class="line">		&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">			<span class="keyword">for</span> j := i; j &lt; n; j++ &#123; <span class="comment">//生成U</span></span><br><span class="line">				temp := <span class="number">0.0</span></span><br><span class="line">				<span class="keyword">for</span> k := <span class="number">0</span>; k &lt; i; k++ &#123;</span><br><span class="line">					temp += L[i][k] * U[k][j]</span><br><span class="line">				&#125;</span><br><span class="line">				U[i][j] = mat[i][j] - temp</span><br><span class="line">			&#125;</span><br><span class="line">			<span class="keyword">for</span> j := i + <span class="number">1</span>; j &lt; n; j++ &#123; <span class="comment">//生成L</span></span><br><span class="line">				temp := <span class="number">0.0</span></span><br><span class="line">				<span class="keyword">for</span> k := <span class="number">0</span>; k &lt; i; k++ &#123;</span><br><span class="line">					temp += L[j][k] * U[k][i]</span><br><span class="line">				&#125;</span><br><span class="line">				L[j][i] = (mat[j][i] - temp) / U[i][i]</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> L, U</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h3 id="回到最小特征值计算"><a href="#回到最小特征值计算" class="headerlink" title="回到最小特征值计算"></a>回到最小特征值计算</h3><p>得到了$LU$矩阵，我们只需要反解出$\vec{u}$的值即可迭代到我们需要的精度，代码如下</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">getMinLambda</span><span class="params">(mat [][]<span class="keyword">float64</span>, n <span class="keyword">int</span>)</span> <span class="title">float64</span></span> &#123;</span><br><span class="line">	<span class="keyword">const</span> MaxIteration = <span class="number">10000</span></span><br><span class="line">	<span class="keyword">const</span> MaxError = <span class="number">0.00001</span></span><br><span class="line">	L, U := LUDecomposition(mat, n)</span><br><span class="line">	v0 := <span class="built_in">make</span>([]<span class="keyword">float64</span>, n) <span class="comment">//生成迭代初始向量</span></span><br><span class="line">	v0[<span class="number">0</span>] = <span class="number">1.0</span></span><br><span class="line">	lambda := <span class="number">0.0</span></span><br><span class="line">	<span class="keyword">for</span> lambda0, counter := <span class="number">1.0</span>, <span class="number">1</span>; math.Abs(lambda-lambda0) &gt; MaxError &amp;&amp; counter &lt; MaxIteration; counter++ &#123; <span class="comment">//迭代边界，次数限制与误差限制</span></span><br><span class="line">		lambda0 = lambda</span><br><span class="line">		w := <span class="built_in">make</span>([]<span class="keyword">float64</span>, n)</span><br><span class="line">		u := <span class="built_in">make</span>([]<span class="keyword">float64</span>, n)</span><br><span class="line">		<span class="keyword">for</span> i := <span class="number">0</span>; i &lt; n; i++ &#123; <span class="comment">//解出Lw=v</span></span><br><span class="line">			temp := <span class="number">0.0</span></span><br><span class="line">			<span class="keyword">for</span> j := <span class="number">0</span>; j &lt; i; j++ &#123;</span><br><span class="line">				temp += L[i][j] * w[j]</span><br><span class="line">			&#125;</span><br><span class="line">			w[i] = v0[i] - temp</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">for</span> i := n - <span class="number">1</span>; i &gt; <span class="number">-1</span>; i-- &#123; <span class="comment">//解出Uu=w</span></span><br><span class="line">			temp := <span class="number">0.0</span></span><br><span class="line">			<span class="keyword">for</span> j := i; j &lt; n; j++ &#123;</span><br><span class="line">				temp += U[i][j] * u[j]</span><br><span class="line">			&#125;</span><br><span class="line">			u[i] = (w[i] - temp) / U[i][i]</span><br><span class="line">		&#125;</span><br><span class="line">		lambda = <span class="number">0.0</span></span><br><span class="line">		<span class="keyword">for</span> i := <span class="number">0</span>; i &lt; n; i++ &#123; <span class="comment">//找到最大值</span></span><br><span class="line">			<span class="keyword">if</span> lambda &lt; math.Abs(u[i]) &#123;</span><br><span class="line">				lambda = math.Abs(u[i])</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">for</span> i := <span class="number">0</span>; i &lt; n; i++ &#123; <span class="comment">//进行规范化</span></span><br><span class="line">			v0[i] = u[i] / lambda</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> lambda</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h2 id="计算条件数"><a href="#计算条件数" class="headerlink" title="计算条件数"></a>计算条件数</h2><p>有了上面的前置工作，最后一步计算条件数就显得十分简单，不过我们在$getMinLambda()$中返回的是最小特征值的倒数，因此在最后直接两者相乘即可，最后代码如下</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">condNum</span><span class="params">(n <span class="keyword">int</span>)</span> <span class="title">float64</span></span> &#123;</span><br><span class="line">	mat := genHilbertMatrix(n)</span><br><span class="line">	lambda1 := getMaxLambda(mat, n)</span><br><span class="line">	lambda2 := getMinLambda(mat, n)</span><br><span class="line">	cond := lambda1 * lambda2</span><br><span class="line">	<span class="keyword">return</span> cond</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h2 id="运行结果"><a href="#运行结果" class="headerlink" title="运行结果"></a>运行结果</h2><p><img src="/images/NAimg.jpg"></p>
-
-      
-
-      
-    </div>
-    <div class="article-info article-info-index">
-      
-      
+        <div class="article-info info-on-right">
+          
 	<div class="article-tag tagcloud">
 		<i class="icon-price-tags icon"></i>
 		<ul class="article-tag-list">
@@ -220,124 +199,19 @@
 		</ul>
 	</div>
 
-      
+          
 
-      
-        <p class="article-more-link">
-          <a class="article-more-a" href="/2021/10/29/hilbert/">展开全文 >></a>
-        </p>
-      
-
-      
-      <div class="clearfix"></div>
-    </div>
+        </div>
+        <div class="clearfix"></div>
+    </header>
   </div>
 </article>
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-    </div>
-</aside>
-
-
-
-
   
-    <article id="post-World" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
+  
+    </div></section>
+  
+
     
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2021/10/28/World/">Hello World!</a>
-    </h1>
-  
-
-        
-        <a href="/2021/10/28/World/" class="archive-article-date">
-  	<time datetime="2021-10-28T14:39:57.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-10-28</time>
-</a>
-        
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <blockquote>
-<p>于浩歌狂热之际中寒;于天上看见深渊。于一切眼中看见无所有;于无所希望中得救。</p>
-</blockquote>
-<p>欢迎来到Wandleshen的博客，目前是一个计算机专业在读大学生，还有很多东西需要学习呢。</p>
-<h2 id="主营业务"><a href="#主营业务" class="headerlink" title="主营业务"></a>主营业务</h2><ul>
-<li>刷题感想</li>
-<li>日常随笔</li>
-<li>游戏分享</li>
-<li>灵感记录</li>
-</ul>
-
-      
-
-      
-    </div>
-    <div class="article-info article-info-index">
-      
-      
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">主页</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-      
-
-      
-        <p class="article-more-link">
-          <a class="article-more-a" href="/2021/10/28/World/">展开全文 >></a>
-        </p>
-      
-
-      
-      <div class="clearfix"></div>
-    </div>
-  </div>
-</article>
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-    </div>
-</aside>
-
-
-
-
-  
-  
 
 
           </div>
@@ -359,10 +233,10 @@
     <script>
 	var yiliaConfig = {
 		mathjax: false,
-		isHome: true,
+		isHome: false,
 		isPost: false,
 		isArchive: false,
-		isTag: false,
+		isTag: true,
 		isCategory: false,
 		open_in_new: false,
 		toc_hide_index: true,
