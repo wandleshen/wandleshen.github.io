@@ -18,7 +18,7 @@
 <meta property="og:image" content="http://example.com/images/NAimg.png">
 <meta property="og:image" content="http://example.com/images/MLimg.png">
 <meta property="article:published_time" content="2021-10-29T03:42:07.000Z">
-<meta property="article:modified_time" content="2021-10-29T07:33:37.952Z">
+<meta property="article:modified_time" content="2021-10-29T07:39:13.111Z">
 <meta property="article:author" content="Wandleshen">
 <meta property="article:tag" content="刷题">
 <meta name="twitter:card" content="summary">
@@ -231,7 +231,7 @@ U\vec{u}=\vec{w} \\
 <h2 id="计算条件数"><a href="#计算条件数" class="headerlink" title="计算条件数"></a>计算条件数</h2><p>有了上面的前置工作，最后一步计算条件数就显得十分简单，不过我们在$getMinLambda()$中返回的是最小特征值的倒数，因此在最后直接两者相乘即可，最后代码如下</p>
 <figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">condNum</span><span class="params">(n <span class="keyword">int</span>)</span> <span class="title">float64</span></span> &#123;</span><br><span class="line">	mat := genHilbertMatrix(n)</span><br><span class="line">	lambda1 := getMaxLambda(mat, n)</span><br><span class="line">	lambda2 := getMinLambda(mat, n)</span><br><span class="line">	cond := lambda1 * lambda2</span><br><span class="line">	<span class="keyword">return</span> cond</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <h2 id="运行结果"><a href="#运行结果" class="headerlink" title="运行结果"></a>运行结果</h2><p><img src="/images/NAimg.png" alt=""></p>
-<p>通过与matlab输出进行对比，发现数据比较吻合</p>
+<p>通过与matlab输出进行对比，发现数据精度能达到四到五位</p>
 <p><img src="/images/MLimg.png" alt=""></p>
 
       
