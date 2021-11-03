@@ -17,7 +17,7 @@
 
 <script id="hexo-configurations">
     var NexT = window.NexT || {};
-    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":false,"style":"flat"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
   </script>
 
   <meta name="description" content="纵使我身在墓碣之中，我仍自以为是无限宇宙的国王">
@@ -222,7 +222,21 @@
                 <time title="修改时间：2021-10-29 19:31:46" itemprop="dateModified" datetime="2021-10-29T19:31:46+08:00">2021-10-29</time>
               </span>
 
-          
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>104</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>1 分钟</span>
+            </span>
 
         </div>
       </header>
@@ -286,12 +300,32 @@
                 <i class="far fa-calendar"></i>
               </span>
               <span class="post-meta-item-text">发表于</span>
-              
 
-              <time title="创建时间：2021-10-30 12:46:04 / 修改时间：15:49:50" itemprop="dateCreated datePublished" datetime="2021-10-30T12:46:04+08:00">2021-10-30</time>
+              <time title="创建时间：2021-10-30 12:46:04" itemprop="dateCreated datePublished" datetime="2021-10-30T12:46:04+08:00">2021-10-30</time>
             </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-11-03 13:10:09" itemprop="dateModified" datetime="2021-11-03T13:10:09+08:00">2021-11-03</time>
+              </span>
 
-          
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>8.8k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>8 分钟</span>
+            </span>
 
         </div>
       </header>
@@ -303,63 +337,14 @@
 
       
           <p>浙大的图像信息处理，一门奇妙的课程，老师上课吹水摸鱼，网上的资源也十分不集中。故在此开设专题作为图像信息处理作业的一个分享，请善用博客搜索功能。</p>
-<h2 id="Assignment-2作业要求"><a href="#Assignment-2作业要求" class="headerlink" title="Assignment-2作业要求"></a>Assignment-2作业要求</h2><ul>
-<li>Image binarization</li>
-<li>Binary image erosion</li>
-<li>Binary image dilation</li>
-<li>Binary image opening</li>
-<li>Binary image closing</li>
-</ul>
-<h2 id="作业分析"><a href="#作业分析" class="headerlink" title="作业分析"></a>作业分析</h2><h3 id="图像二值化"><a href="#图像二值化" class="headerlink" title="图像二值化"></a>图像二值化</h3><p>读取一张<code>.bmp</code>图像将其转换位二值图像，首先我们需要在C语言中定义图像信息结构体</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">tagBITMAPFILEHEADER</span> &#123;</span></span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">short</span> bfType;        <span class="comment">// 19778，必须是BM字符串，对应的十六进制为0x4d42,十进制为19778，否则不是bmp格式文件</span></span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">int</span>   bfSize;        <span class="comment">// 文件大小 以字节为单位(2-5字节)</span></span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">short</span> bfReserved1;   <span class="comment">// 保留，必须设置为0 (6-7字节)</span></span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">short</span> bfReserved2;   <span class="comment">// 保留，必须设置为0 (8-9字节)</span></span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">int</span>   bfOffBits;     <span class="comment">// 从文件头到像素数据的偏移  (10-13字节)</span></span><br><span class="line">&#125; BITMAPHEADER;</span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">tagBITMAPINFOHEADER</span> &#123;</span></span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">int</span>    biSize;          <span class="comment">// 此结构体的大小 (14-17字节)</span></span><br><span class="line">    <span class="keyword">long</span>            biWidth;         <span class="comment">// 图像的宽  (18-21字节)</span></span><br><span class="line">    <span class="keyword">long</span>            biHeight;        <span class="comment">// 图像的高  (22-25字节)</span></span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">short</span>  biPlanes;        <span class="comment">// 表示bmp图片的平面属，显然显示器只有一个平面，所以恒等于1 (26-27字节)</span></span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">short</span>  biBitCount;      <span class="comment">// 一像素所占的位数，一般为24   (28-29字节)</span></span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">int</span>    biCompression;   <span class="comment">// 说明图象数据压缩的类型，0为不压缩。 (30-33字节)</span></span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">int</span>    biSizeImage;     <span class="comment">// 像素数据所占大小, 这个值应该等于上面文件头结构中bfSize-bfOffBits (34-37字节)</span></span><br><span class="line">    <span class="keyword">long</span>            biXPelsPerMeter; <span class="comment">// 说明水平分辨率，用象素/米表示。一般为0 (38-41字节)</span></span><br><span class="line">    <span class="keyword">long</span>            biYPelsPerMeter; <span class="comment">// 说明垂直分辨率，用象素/米表示。一般为0 (42-45字节)</span></span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">int</span>    biClrUsed;       <span class="comment">// 说明位图实际使用的彩色表中的颜色索引数（设为0的话，则说明使用所有调色板项）。 (46-49字节)</span></span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">int</span>    biClrImportant;  <span class="comment">// 说明对图象显示有重要影响的颜色索引的数目，如果是0，表示都重要。(50-53字节)</span></span><br><span class="line">&#125; BITMAPINFOHEADER;</span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">tagRGBQUAD</span> &#123;</span></span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">char</span>    rgbBlue;</span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">char</span>    rgbGreen;</span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">char</span>    rgbRed;</span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">char</span>    rgbReserved;</span><br><span class="line">&#125; RGBQUAD;</span><br></pre></td></tr></table></figure>
-<p>然后进行图像头结构的读取与判断</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">FILE* bmpfile = <span class="built_in">fopen</span>(argv[<span class="number">1</span>], <span class="string">&quot;rb&quot;</span>);</span><br><span class="line">BITMAPHEADER* header = <span class="keyword">new</span> BITMAPHEADER;</span><br><span class="line">BITMAPINFOHEADER* info = <span class="keyword">new</span> BITMAPINFOHEADER;</span><br><span class="line"><span class="keyword">if</span> (!bmpfile) <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line"><span class="built_in">fread</span>(header, <span class="number">14</span>, <span class="number">1</span>, bmpfile);</span><br><span class="line"><span class="keyword">if</span> (header-&gt;bfType != <span class="number">0x4D42</span>) &#123; <span class="comment">//判断是否为bmp图像</span></span><br><span class="line">    std::cout &lt;&lt; <span class="string">&quot;Not a bitmap file&quot;</span> &lt;&lt; std::endl;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="built_in">fread</span>(info, <span class="built_in"><span class="keyword">sizeof</span></span>(BITMAPINFOHEADER), <span class="number">1</span>, bmpfile);</span><br></pre></td></tr></table></figure>
-<p>赋值计算单行像素数量<code>lineBytes</code>并读取像素信息，注意由于<code>.bmp</code>文件单行像素一定是4的整倍数，因此需要补齐</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> imSize = info-&gt;biSize;</span><br><span class="line"><span class="keyword">int</span> width = info-&gt;biWidth;</span><br><span class="line"><span class="keyword">int</span> height = info-&gt;biHeight;</span><br><span class="line"><span class="keyword">int</span> bitCount = info-&gt;biBitCount;</span><br><span class="line"><span class="keyword">int</span> lineBytes = (bitCount * width / <span class="number">8</span> + <span class="number">3</span>) / <span class="number">4</span> * <span class="number">4</span>;  <span class="comment">//一行的byte数，四位补齐</span></span><br><span class="line"><span class="keyword">unsigned</span> <span class="keyword">char</span>* imgData = <span class="keyword">new</span> <span class="keyword">unsigned</span> <span class="keyword">char</span>[lineBytes * height];</span><br><span class="line"><span class="built_in">fread</span>(imgData, lineBytes * height, <span class="number">1</span>, bmpfile);</span><br><span class="line"><span class="built_in">fclose</span>(bmpfile);</span><br></pre></td></tr></table></figure>
-<p>在读取图像之后计算其灰度值，此时我们用$YUV$格式转换中的$Y$值表示灰度，转换公式如下</p>
-<script type="math/tex; mode=display">
-Y=0.299*R+0.587*G+0.114*B</script><p>由于$RGB$格式的大小是灰度图像的三倍，因此在创建灰度数据时要除以三再赋值</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">unsigned</span> <span class="keyword">char</span>* biData = <span class="keyword">new</span> <span class="keyword">unsigned</span> <span class="keyword">char</span>[lineBytes * height / <span class="number">3</span>];</span><br><span class="line"><span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; height; i++)&#123; <span class="comment">//对于每一行</span></span><br><span class="line">	<span class="keyword">for</span>(<span class="keyword">int</span> j = <span class="number">0</span>; j &lt; width * <span class="number">3</span>; j++)&#123; <span class="comment">//对于每一列</span></span><br><span class="line">		<span class="keyword">unsigned</span> <span class="keyword">char</span> r = *(imgData + lineBytes * (height - <span class="number">1</span> - i) + j); <span class="comment">//从最后一行往上读</span></span><br><span class="line">		j++;</span><br><span class="line">		<span class="keyword">unsigned</span> <span class="keyword">char</span> g = *(imgData + lineBytes * (height - <span class="number">1</span> - i) + j);</span><br><span class="line">		j++;</span><br><span class="line">		<span class="keyword">unsigned</span> <span class="keyword">char</span> b = *(imgData + lineBytes * (height - <span class="number">1</span> - i) + j);</span><br><span class="line">		*(biData + lineBytes * (height - <span class="number">1</span> - i) / <span class="number">3</span> + j / <span class="number">3</span>) = <span class="number">0.299</span> * r + <span class="number">0.587</span> * g + <span class="number">0.114</span> * b;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;  <span class="comment">//完成灰度转换</span></span><br></pre></td></tr></table></figure>
-<p>然后是二值化图像阈值的确定，根据课上内容我们可以知道，我们需要确定前景和背景然后让其组内方差最小且组间方差最大，这就是所谓<a target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/%E5%A4%A7%E6%B4%A5%E7%AE%97%E6%B3%95"><strong>大津算法</strong></a>，链接中有通过直方图的C语言实现，可以作为补充阅读，我们这里使用与<a target="_blank" rel="noopener" href="http://www.opencv.org/">OpenCV</a>相类似的方法</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">unsigned</span> <span class="keyword">char</span> <span class="title">otsuThreshold</span><span class="params">(<span class="keyword">unsigned</span> <span class="keyword">char</span>* biData, <span class="keyword">int</span> width, <span class="keyword">int</span> height, <span class="keyword">int</span> lineBytes)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">int</span> GrayScale = <span class="number">256</span>; <span class="comment">//256级灰度</span></span><br><span class="line">    <span class="keyword">int</span> pixelCount[GrayScale] = &#123;<span class="number">0</span>&#125;;</span><br><span class="line">    <span class="keyword">double</span> pixelPro[GrayScale] = &#123;<span class="number">0.0</span>&#125;;</span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">char</span> threshold = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; height; i++) &#123;  <span class="comment">//统计每个灰度在像素中的个数</span></span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> j = <span class="number">0</span>; j &lt; width; j++) &#123;</span><br><span class="line">            ++pixelCount[(<span class="keyword">int</span>)*(biData + lineBytes * i + j)];</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; GrayScale; i++) &#123;  <span class="comment">//计算每个像素所占比例</span></span><br><span class="line">        pixelPro[i] = (<span class="keyword">double</span>)pixelCount[i] / (width * height);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">double</span> w0, w1, u0tmp, u1tmp, u0, u1, u, deltaTmp, deltaMax = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; GrayScale; i++) &#123;</span><br><span class="line">        w0 = w1 = u0tmp = u1tmp = u0 = u1 = u = deltaTmp = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> j = <span class="number">0</span>; j &lt; GrayScale; j++) &#123;</span><br><span class="line">            <span class="keyword">if</span> (j &lt;= i) &#123;  <span class="comment">//背景</span></span><br><span class="line">                w0 += pixelPro[j];</span><br><span class="line">                u0tmp += j * pixelPro[j];</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">else</span> &#123;  <span class="comment">//前景</span></span><br><span class="line">                w1 += pixelPro[j];</span><br><span class="line">                u1tmp += j * pixelPro[j];</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;  <span class="comment">//计算组间方差</span></span><br><span class="line">        u0 = u0tmp / w0;</span><br><span class="line">        u1 = u1tmp / w1;</span><br><span class="line">        u = u0tmp + u1tmp;</span><br><span class="line">        deltaTmp = w0 * <span class="built_in">pow</span>((u0 - u), <span class="number">2</span>) + w1 * <span class="built_in">pow</span>((u1 - u), <span class="number">2</span>);</span><br><span class="line">        <span class="keyword">if</span> (deltaTmp &gt; deltaMax) &#123;</span><br><span class="line">            deltaMax = deltaTmp;</span><br><span class="line">            threshold = i;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> threshold;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>确定了阈值后就可以进行二值化了</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">unsigned</span> <span class="keyword">char</span> threshold = <span class="built_in">otsuThreshold</span>(biData, width, height, lineBytes / <span class="number">3</span>);</span><br><span class="line"><span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; height; i++)&#123; <span class="comment">//对于每一行</span></span><br><span class="line">	<span class="keyword">for</span>(<span class="keyword">int</span> j = <span class="number">0</span>; j &lt; width; j++)&#123; <span class="comment">//对于每一列</span></span><br><span class="line">		<span class="keyword">if</span> (*(biData + lineBytes * (height - <span class="number">1</span> - i) / <span class="number">3</span> + j) &gt;= threshold)</span><br><span class="line">			*(biData + lineBytes * (height - <span class="number">1</span> - i) / <span class="number">3</span> + j) = <span class="number">255</span>;</span><br><span class="line">		<span class="keyword">else</span></span><br><span class="line">			*(biData + lineBytes * (height - <span class="number">1</span> - i) / <span class="number">3</span> + j) = <span class="number">0</span>;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;  <span class="comment">//完成二值化转换</span></span><br></pre></td></tr></table></figure>
-<p>处理完数据后就可以写入二值文件了，首先是定义头文件和颜色表，然后写入数据即可</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line">FILE* biBMP = <span class="built_in">fopen</span>(<span class="string">&quot;bi.bmp&quot;</span>, <span class="string">&quot;wb&quot;</span>);</span><br><span class="line"><span class="keyword">int</span> lineBytesBi = (width * <span class="number">8</span> / <span class="number">8</span> + <span class="number">3</span>) / <span class="number">4</span> * <span class="number">4</span>;</span><br><span class="line"><span class="keyword">if</span> (!biBMP) <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line"></span><br><span class="line">BITMAPHEADER* biHeader = <span class="keyword">new</span> BITMAPHEADER;</span><br><span class="line">biHeader-&gt;bfType = <span class="number">0x4D42</span>;</span><br><span class="line">biHeader-&gt;bfSize = <span class="number">14</span> + <span class="number">40</span> + <span class="built_in"><span class="keyword">sizeof</span></span>(RGBQUAD) * <span class="number">256</span> + lineBytesBi * height;</span><br><span class="line">biHeader-&gt;bfReserved1 = <span class="number">0</span>;</span><br><span class="line">biHeader-&gt;bfReserved2 = <span class="number">0</span>;</span><br><span class="line">biHeader-&gt;bfOffBits = <span class="number">14</span> + <span class="number">40</span> + <span class="built_in"><span class="keyword">sizeof</span></span>(RGBQUAD) * <span class="number">256</span>;</span><br><span class="line"><span class="built_in">fwrite</span>(&amp;biHeader-&gt;bfType, <span class="number">2</span>, <span class="number">1</span>, biBMP);</span><br><span class="line"><span class="built_in">fwrite</span>(&amp;biHeader-&gt;bfSize, <span class="number">4</span>, <span class="number">1</span>, biBMP);</span><br><span class="line"><span class="built_in">fwrite</span>(&amp;biHeader-&gt;bfReserved1, <span class="number">2</span>, <span class="number">1</span>, biBMP);</span><br><span class="line"><span class="built_in">fwrite</span>(&amp;biHeader-&gt;bfReserved2, <span class="number">2</span>, <span class="number">1</span>, biBMP);</span><br><span class="line"><span class="built_in">fwrite</span>(&amp;biHeader-&gt;bfOffBits, <span class="number">4</span>, <span class="number">1</span>, biBMP);</span><br><span class="line"></span><br><span class="line">BITMAPINFOHEADER* biInfoHeader = <span class="keyword">new</span> BITMAPINFOHEADER;</span><br><span class="line">biInfoHeader-&gt;biBitCount = <span class="number">8</span>;</span><br><span class="line">biInfoHeader-&gt;biClrImportant = <span class="number">0</span>;</span><br><span class="line">biInfoHeader-&gt;biClrUsed = <span class="number">0</span>;</span><br><span class="line">biInfoHeader-&gt;biCompression = <span class="number">0</span>;</span><br><span class="line">biInfoHeader-&gt;biHeight = height;</span><br><span class="line">biInfoHeader-&gt;biWidth = width;</span><br><span class="line">biInfoHeader-&gt;biPlanes = <span class="number">1</span>;</span><br><span class="line">biInfoHeader-&gt;biSize = <span class="number">40</span>;</span><br><span class="line">biInfoHeader-&gt;biSizeImage = lineBytesBi * height;</span><br><span class="line">biInfoHeader-&gt;biXPelsPerMeter = <span class="number">0</span>;</span><br><span class="line">biInfoHeader-&gt;biYPelsPerMeter = <span class="number">0</span>;</span><br><span class="line"><span class="built_in">fwrite</span>(biInfoHeader, <span class="number">40</span>, <span class="number">1</span>, biBMP);</span><br><span class="line"></span><br><span class="line">RGBQUAD* pColorTable = <span class="keyword">new</span> RGBQUAD[<span class="number">256</span>];</span><br><span class="line"><span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">256</span>; i++) &#123;</span><br><span class="line">    pColorTable[i].rgbRed = i;</span><br><span class="line">    pColorTable[i].rgbGreen = i;</span><br><span class="line">    pColorTable[i].rgbBlue = i; <span class="comment">//是颜色表里的B、G、R分量都相等，且等于索引值</span></span><br><span class="line">    pColorTable[i].rgbReserved = <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="built_in">fwrite</span>(pColorTable, <span class="built_in"><span class="keyword">sizeof</span></span>(RGBQUAD), <span class="number">256</span>, biBMP);</span><br><span class="line"><span class="built_in">fwrite</span>(biData, lineBytesBi * height, <span class="number">1</span>, biBMP);</span><br><span class="line"><span class="built_in">fclose</span>(biBMP);</span><br></pre></td></tr></table></figure>
-<p>最终效果<br><img src="/2021/10/30/%E5%9B%BE%E5%83%8F%E4%BF%A1%E6%81%AF%E5%A4%84%E7%90%86%E4%BD%9C%E4%B8%9A/gouldian_finch.bmp" class="" title="This is the original image"><br><img src="/2021/10/30/%E5%9B%BE%E5%83%8F%E4%BF%A1%E6%81%AF%E5%A4%84%E7%90%86%E4%BD%9C%E4%B8%9A/bi.bmp" class="" title="This is the binary image"></p>
-<h3 id="二值化图像腐蚀"><a href="#二值化图像腐蚀" class="headerlink" title="二值化图像腐蚀"></a>二值化图像腐蚀</h3><p>图像腐蚀，常用于使目标缩小，去除图像边界或者去除不想要的小物体（例如减噪等操作），计算方法为</p>
-<script type="math/tex; mode=display">
-A\ominus B=\{(x,y)\vert(B)_{xy}\subseteq A\}</script><p>其中$A$是二值化图像，$B$是腐蚀领域</p>
-<p>具体操作就是用一个结构元素$B$(一般是3×3的大小)扫描图像$A$中的每一个像素，用结构元素中的每一个像素与其覆盖的像素做“与”操作，如果都为1，则该像素为1，否则为0</p>
-<p>我们采用遍历与运算进行实现，此时</p>
-<script type="math/tex; mode=display">
-B=
-\begin{bmatrix}0 & 1 & 0\\ 1 & 1 & 1 \\ 0 & 1 & 0\end{bmatrix}</script><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">unsigned</span> <span class="keyword">char</span>* <span class="title">imgErosion</span><span class="params">(<span class="keyword">const</span> <span class="keyword">unsigned</span> <span class="keyword">char</span>* biData, <span class="keyword">int</span> width, <span class="keyword">int</span> height, <span class="keyword">int</span> lineBytes)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">char</span>* tempData = <span class="keyword">new</span> <span class="keyword">unsigned</span> <span class="keyword">char</span>[lineBytes * height];</span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">char</span>* eroData = <span class="keyword">new</span> <span class="keyword">unsigned</span> <span class="keyword">char</span>[lineBytes * height];</span><br><span class="line">    <span class="built_in">memcpy</span>(tempData, biData, lineBytes * height * <span class="built_in"><span class="keyword">sizeof</span></span>(<span class="keyword">unsigned</span> <span class="keyword">char</span>));</span><br><span class="line">    <span class="built_in">memcpy</span>(eroData, biData, lineBytes * height * <span class="built_in"><span class="keyword">sizeof</span></span>(<span class="keyword">unsigned</span> <span class="keyword">char</span>));</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">1</span>; i &lt; height - <span class="number">1</span>; i++) &#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> j = <span class="number">1</span>; j &lt; width - <span class="number">1</span>; j++) &#123;</span><br><span class="line">            <span class="keyword">if</span> (*(tempData + i * lineBytes + j) == <span class="number">0</span> || *(tempData + (i<span class="number">-1</span>) * lineBytes + j) == <span class="number">0</span> ||</span><br><span class="line">                *(tempData + (i+<span class="number">1</span>) * lineBytes + j) == <span class="number">0</span> || *(tempData + i * lineBytes + j+<span class="number">1</span>) == <span class="number">0</span> ||</span><br><span class="line">                *(tempData + i * lineBytes + j<span class="number">-1</span>) == <span class="number">0</span>) &#123;</span><br><span class="line">                *(eroData + i * lineBytes + j) = <span class="number">0</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">else</span> &#123;</span><br><span class="line">                *(eroData + i * lineBytes + j) = <span class="number">255</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in"><span class="keyword">delete</span></span>(tempData);</span><br><span class="line">    <span class="keyword">return</span> eroData;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>效果如下</p>
-<img src="/2021/10/30/%E5%9B%BE%E5%83%8F%E4%BF%A1%E6%81%AF%E5%A4%84%E7%90%86%E4%BD%9C%E4%B8%9A/ero.bmp" class="" title="This is the erosion image">
-<h3 id="二值化图像膨胀"><a href="#二值化图像膨胀" class="headerlink" title="二值化图像膨胀"></a>二值化图像膨胀</h3><p>图像膨胀，常用于使目标增大，增粗字体，填补空洞，计算方法为</p>
-<script type="math/tex; mode=display">
-A\oplus B=\{z\vert(B)_z\cap A\neq\emptyset\}</script><p>其中$A$是二值化图像，$B$是膨胀领域</p>
-<p>具体操作就是用一个结构元素(一般是3×3的大小)扫描图像中的每一个像素，用结构元素中的每一个像素与其覆盖的像素做“与”操作，如果都为0，则该像素为0，否则为1</p>
-<p>由此可见膨胀和腐蚀其实是对称的运算，因此我们可以将两个运算合并在一起，此时</p>
-<script type="math/tex; mode=display">
-B=
-\begin{bmatrix}0 & 1 & 0\\ 1 & 1 & 1 \\ 0 & 1 & 0\end{bmatrix}</script><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">unsigned</span> <span class="keyword">char</span>* <span class="title">imgEroDila</span><span class="params">(<span class="keyword">const</span> <span class="keyword">unsigned</span> <span class="keyword">char</span>* biData, <span class="keyword">int</span> width, <span class="keyword">int</span> height, <span class="keyword">int</span> lineBytes, <span class="keyword">int</span> flag)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">char</span>* tempData = <span class="keyword">new</span> <span class="keyword">unsigned</span> <span class="keyword">char</span>[lineBytes * height];</span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">char</span>* rtnData = <span class="keyword">new</span> <span class="keyword">unsigned</span> <span class="keyword">char</span>[lineBytes * height];</span><br><span class="line">    <span class="keyword">int</span> p = (flag == <span class="number">1</span>) ? <span class="number">255</span> : <span class="number">0</span>;</span><br><span class="line">    <span class="built_in">memcpy</span>(tempData, biData, lineBytes * height * <span class="built_in"><span class="keyword">sizeof</span></span>(<span class="keyword">unsigned</span> <span class="keyword">char</span>));</span><br><span class="line">    <span class="built_in">memcpy</span>(rtnData, biData, lineBytes * height * <span class="built_in"><span class="keyword">sizeof</span></span>(<span class="keyword">unsigned</span> <span class="keyword">char</span>));</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">1</span>; i &lt; height - <span class="number">1</span>; i++) &#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> j = <span class="number">1</span>; j &lt; width - <span class="number">1</span>; j++) &#123;</span><br><span class="line">            <span class="keyword">if</span> (*(tempData + i * lineBytes + j) == p || *(tempData + (i<span class="number">-1</span>) * lineBytes + j) == p ||</span><br><span class="line">                *(tempData + (i+<span class="number">1</span>) * lineBytes + j) == p || *(tempData + i * lineBytes + j+<span class="number">1</span>) == p ||</span><br><span class="line">                *(tempData + i * lineBytes + j<span class="number">-1</span>) == p) &#123;</span><br><span class="line">                *(rtnData + i * lineBytes + j) = p;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">else</span> &#123;</span><br><span class="line">                *(rtnData + i * lineBytes + j) = <span class="number">255</span> - p;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in"><span class="keyword">delete</span></span>(tempData);</span><br><span class="line">    <span class="keyword">return</span> rtnData;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>效果如下</p>
-<img src="/2021/10/30/%E5%9B%BE%E5%83%8F%E4%BF%A1%E6%81%AF%E5%A4%84%E7%90%86%E4%BD%9C%E4%B8%9A/dila.bmp" class="" title="This is the dilation image">
-<h3 id="二值化图像开运算"><a href="#二值化图像开运算" class="headerlink" title="二值化图像开运算"></a>二值化图像开运算</h3><p>开运算是先腐蚀后膨胀的过程，它可以消除图像上的细小噪声并平滑边界</p>
-<p>有了上述的铺垫，我们可以很快的完成开运算</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">FILE* openBMP = <span class="built_in">fopen</span>(<span class="string">&quot;open.bmp&quot;</span>, <span class="string">&quot;wb&quot;</span>);</span><br><span class="line"><span class="built_in">fwrite</span>(&amp;biHeader-&gt;bfType, <span class="number">2</span>, <span class="number">1</span>, openBMP);</span><br><span class="line"><span class="built_in">fwrite</span>(&amp;biHeader-&gt;bfSize, <span class="number">4</span>, <span class="number">1</span>, openBMP);</span><br><span class="line"><span class="built_in">fwrite</span>(&amp;biHeader-&gt;bfReserved1, <span class="number">2</span>, <span class="number">1</span>, openBMP);</span><br><span class="line"><span class="built_in">fwrite</span>(&amp;biHeader-&gt;bfReserved2, <span class="number">2</span>, <span class="number">1</span>, openBMP);</span><br><span class="line"><span class="built_in">fwrite</span>(&amp;biHeader-&gt;bfOffBits, <span class="number">4</span>, <span class="number">1</span>, openBMP);</span><br><span class="line"><span class="built_in">fwrite</span>(biInfoHeader, <span class="number">40</span>, <span class="number">1</span>, openBMP);</span><br><span class="line"><span class="built_in">fwrite</span>(pColorTable, <span class="built_in"><span class="keyword">sizeof</span></span>(RGBQUAD), <span class="number">256</span>, openBMP);</span><br><span class="line"><span class="keyword">unsigned</span> <span class="keyword">char</span>* openData = <span class="built_in">imgEroDila</span>(biData, width, height, lineBytesBi, <span class="number">0</span>);</span><br><span class="line">openData = <span class="built_in">imgEroDila</span>(openData, width, height, lineBytesBi, <span class="number">1</span>);</span><br><span class="line"><span class="built_in">fwrite</span>(openData, lineBytesBi * height, <span class="number">1</span>, openBMP);</span><br><span class="line"><span class="built_in">fclose</span>(openBMP);</span><br></pre></td></tr></table></figure>
-<p>效果如下</p>
-<img src="/2021/10/30/%E5%9B%BE%E5%83%8F%E4%BF%A1%E6%81%AF%E5%A4%84%E7%90%86%E4%BD%9C%E4%B8%9A/open.bmp" class="" title="This is the open image">
-<h3 id="二值化图像闭运算"><a href="#二值化图像闭运算" class="headerlink" title="二值化图像闭运算"></a>二值化图像闭运算</h3><p>闭运算是先膨胀后腐蚀，它可以填充细小空洞并平滑边界</p>
-<p>代码如下</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">FILE* closeBMP = <span class="built_in">fopen</span>(<span class="string">&quot;close.bmp&quot;</span>, <span class="string">&quot;wb&quot;</span>);</span><br><span class="line"><span class="built_in">fwrite</span>(&amp;biHeader-&gt;bfType, <span class="number">2</span>, <span class="number">1</span>, closeBMP);</span><br><span class="line"><span class="built_in">fwrite</span>(&amp;biHeader-&gt;bfSize, <span class="number">4</span>, <span class="number">1</span>, closeBMP);</span><br><span class="line"><span class="built_in">fwrite</span>(&amp;biHeader-&gt;bfReserved1, <span class="number">2</span>, <span class="number">1</span>, closeBMP);</span><br><span class="line"><span class="built_in">fwrite</span>(&amp;biHeader-&gt;bfReserved2, <span class="number">2</span>, <span class="number">1</span>, closeBMP);</span><br><span class="line"><span class="built_in">fwrite</span>(&amp;biHeader-&gt;bfOffBits, <span class="number">4</span>, <span class="number">1</span>, closeBMP);</span><br><span class="line"><span class="built_in">fwrite</span>(biInfoHeader, <span class="number">40</span>, <span class="number">1</span>, closeBMP);</span><br><span class="line"><span class="built_in">fwrite</span>(pColorTable, <span class="built_in"><span class="keyword">sizeof</span></span>(RGBQUAD), <span class="number">256</span>, closeBMP);</span><br><span class="line"><span class="keyword">unsigned</span> <span class="keyword">char</span>* closeData = <span class="built_in">imgEroDila</span>(biData, width, height, lineBytesBi, <span class="number">1</span>);</span><br><span class="line">closeData = <span class="built_in">imgEroDila</span>(closeData, width, height, lineBytesBi, <span class="number">0</span>);</span><br><span class="line"><span class="built_in">fwrite</span>(closeData, lineBytesBi * height, <span class="number">1</span>, closeBMP);</span><br><span class="line"><span class="built_in">fclose</span>(closeBMP);</span><br></pre></td></tr></table></figure>
-<p>效果如下</p>
-<img src="/2021/10/30/%E5%9B%BE%E5%83%8F%E4%BF%A1%E6%81%AF%E5%A4%84%E7%90%86%E4%BD%9C%E4%B8%9A/close.bmp" class="" title="This is the close image">
-<h2 id="后记"><a href="#后记" class="headerlink" title="后记"></a>后记</h2><p>这是图像信息处理的第二次作业，总的来说还是比较简单方便的，按照ppt上的说法一步一步来就能得出结果</p>
-<p>希望这篇博文能够帮到你完成这次作业</p>
-
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2021/10/30/%E5%9B%BE%E5%83%8F%E4%BF%A1%E6%81%AF%E5%A4%84%E7%90%86%E4%BD%9C%E4%B8%9A/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
       
     </div>
 
@@ -402,12 +387,32 @@ B=
                 <i class="far fa-calendar"></i>
               </span>
               <span class="post-meta-item-text">发表于</span>
-              
 
-              <time title="创建时间：2021-10-29 18:57:45 / 修改时间：19:28:56" itemprop="dateCreated datePublished" datetime="2021-10-29T18:57:45+08:00">2021-10-29</time>
+              <time title="创建时间：2021-10-29 18:57:45" itemprop="dateCreated datePublished" datetime="2021-10-29T18:57:45+08:00">2021-10-29</time>
             </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-11-03 13:10:00" itemprop="dateModified" datetime="2021-11-03T13:10:00+08:00">2021-11-03</time>
+              </span>
 
-          
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>7.4k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>7 分钟</span>
+            </span>
 
         </div>
       </header>
@@ -419,164 +424,14 @@ B=
 
       
           <p>这是一个我在一本日记上看到的故事，它可能代表了过去，也可能预言了未来。</p>
-<h2 id="关于那天看到的女孩是不是我的前女友这件事"><a href="#关于那天看到的女孩是不是我的前女友这件事" class="headerlink" title="关于那天看到的女孩是不是我的前女友这件事"></a>关于那天看到的女孩是不是我的前女友这件事</h2><p>和她分手之后，我经常想如果再次遇见她我会怎么做。很多个夜晚我觉得应该去找她，应该告诉她“我当时不知道怎么爱你，让你不舒服了。但和你在一起的时候我真的很愉快。我们还能做朋友吗？我很想你。”</p>
-<p>但校园很大，命运女神没让我再遇见她。</p>
-<p>直到在那个课间，半长黑头发、骑着自行车的女孩笑着向我挥手，条件反射地我摆出一个营业微笑打招呼。她骑过去了，我还在回忆那是谁。<br>接着我突然想到，那不会是她吧？</p>
-<p>记不住分手三个月的前女友的脸看上去似乎离奇，但毕竟不能用正常人的经验苛求脸盲。<br>身为脸盲，我有丰富的伪装正常人经验。我记不住五官的动态组合，所以把外貌特征提炼成文字是我认识每个人的第一步。</p>
-<p>她的身高是一米五。那之前我对一米五没什么实感，认识她之后才发现这算是个罕见特征。刚认识她时我都通过身高辨认她，所以我很喜欢这么高的她——但那个女孩骑着自行车，我看不出她的身高。</p>
-<p>她不戴眼镜。真是个遗憾，因为我经常通过镜框标识人脸。衣服隔了一夜就可能换一件，眼镜可是几个月乃至几年都不会变化的特征——可惜，她和那个女孩都不戴眼镜。</p>
-<p>她是中短发，有染过棕色的遗迹。而那个女孩是中长的黑色微卷头发。但这更不能说明什么了，虽然从小到大没和多少女孩打过交道，但我也知道一个假期过去女孩的发型可能产生根本性改变。</p>
-<p>最后我还是认为那个女孩不是我的前女友。其一，哪怕过了一个假期她大概也不是能笑着向前男友打招呼的那种女孩。其二，那不是她的自行车。我记得她的自行车是粉色的，有一对极小的车轮。她还吐槽过这辆车是她的妈妈千里迢迢送她上大学时挑选的、并不符合她的品味。那辆车的车筐小而浅，根本装不下什么东西。而向我打招呼的那个女孩车筐里不仅装了书包还竖着插了两张卷起来的设计图，根本是那辆粉色自行车无法承受之重。</p>
-<p>“那不是她，”我最后向自己确认，“我大概永远不会遇见我的前女友了。”</p>
-<p>我在史纲课上认识她。课上别的系的学生占绝对多数而且差不多都互相脸熟，老师下令分小组之后简直是瞬间就组好了队，我和朋友作为外系学生只能在课堂群里发“二缺四求组队”。</p>
-<p>她是联系我的人之一。她说“我是20级能化高的，你们还缺人吗？我可能有点内向，不太擅长小组作业。如果不能再加人的话给我发个笑脸就好啦。”</p>
-<p>我觉得有点好笑。大家都是内卷大潮中的大学生，如果有选择的话谁愿意和一群陌生人组队呢，有人主动要求当然是求之不得。</p>
-<p>话说回来，我还是第一次见到刚发出邀请就已经开始考虑怎么体面地被拒绝的人。</p>
-<p>我说：“还缺人，稍等，我拉个群。”</p>
-<p>我们就是这么认识的。</p>
-<p>“能化高”的全称是“能源、化工、高分子”。她说这个的时候我们小组成员坐在去附近纪念馆的公交车上，准备一篇小组展示的稿子。我看着坐在窗边拄着下巴的她，看上去文静又平凡，窗外的光斑投在她扎头发的黄丝带上。我想：这听上去不像是她的专业。</p>
-<p>她说她的父母都阴差阳错学了医，并致力于打消亲朋好友家小孩的医学梦想。但她有一次问她的母亲重来一次要干什么，她的母亲毫不犹豫：“学医。”</p>
-<p>“所有人都说做出选择之前要充分了解。”她看着窗外，“但充分了解之后，你也走不开了。”</p>
-<p>我看着她。我想到其实我也不爱自己的志愿——不过是在前途和兴趣之间找了个不好不坏的平衡点罢了。我不讨厌我的专业，这已经比大多数人幸运了。</p>
-<p>纪念馆没什么好说的。回学校时组长决定打车，一辆车只能坐下四人也就意味着有两人要落单。感谢朋友眼疾手快把三个人推进出租车，关上车门之前向我眉毛一挑。</p>
-<p>我看着她有点尴尬。她看着手机上的打车软件，告诉我走过一条街更好打车。</p>
-<p>那条街两边种着银杏树，秋天时叶子金黄飘落一地。她走在我前面半步，忽然伸手去抓飘落的银杏叶，但那片叶子刁钻地从她手指缝里逃跑了。她回过头，有点不好意思地笑了。</p>
-<p>我看着她的脸。我记不住，我知道，这张脸很快会从我记忆中溜走。但脸盲不意味着我不会辨认美丑。</p>
-<p>秋天的阳光透过银杏树荫，她脸上淡淡的雀斑几近透明。黄丝带系在她的头发上，好像金黄色的叶子摇曳舞蹈。她笑起来。</p>
-<p>但在那之后我和她将近一个月没什么联系。2021年了，我第一次见到上课时真的一点消息不回的当代大学生。我试着打开话题，她草草带过。我觉得大概没什么之后了。</p>
-<p>后来有个晚课下课的日子，我看见路边有卖苹果。过度包装的典范，一个苹果外面裹了一层又一层的红色包装纸。我突然想到那是12月24日，平安夜。</p>
-<p>我对过度包装不感兴趣，但我突然很想吃苹果。苹果涨价了，但也说得过去。我买了几个又红又大的苹果，拿在手里掂量。我这个人有点相信生活需要仪式感，但把一袋子仪式感拿在手里之后又觉得独自找仪式感没什么意思。</p>
-<p>我突然很想见她。</p>
-<p>如果一个不太熟的课友问她“你在寝室吗”，她会回复吗？</p>
-<p>她说“在，有什么事吗？”</p>
-<p>我问“你方便下楼吗？”</p>
-<p>我在她楼下等着，用目光徒劳无益地筛选着走过的女孩，那一袋子苹果在我的手上压出勒痕。女孩们的脸在我脸盲的脑子里滑过去，好像莲叶上的水滴一样毫无痕迹。我开始害怕她已经出现但没被我认出来，或者她也还没记住我的脸。</p>
-<p>……但她出现了。我不知道她的身高有反向的鹤立鸡群作用，但同样好认。这几乎让我松了一口气。</p>
-<p>我已经从那袋苹果里挑出了最红最大最适合送人的一个，但她走过来时我又觉得从一袋苹果里只拿出一个送她是不是不太好。天哪她走过来了她走近了她裹在红色的牛角扣大衣里脑子啊你快想想办法——</p>
-<p>我把整个装着苹果的袋子塞到她手里，语无伦次地说了一些类似于“本来也是买来自己吃的但突然想送人所以觉得你是最合适送的人”之类的话，自己都觉得自己从各个角度来看真是愚蠢得惊人。——不过往好点想，起码她收下了。</p>
-<p>她的脸红扑扑的，我能看到她的头顶。我觉得我低下身简直可以把下巴搭在她柔软的发旋上。</p>
-<p>她说“谢谢你，我很喜欢。”</p>
-<p>我不了解女孩，但我觉得她真的挺开心。</p>
-<p>那之后很快《情书》重映。我本来已经做好了自己去看爱情片的准备，但后来想到了她。</p>
-<p>我们骑车去了附近的商场。我们先吃了一顿芝士排骨火锅配拌饭。我说我喜欢这里的芝士排骨，第一次来吃是社团破冰，每个人才吃到一根。后来我想再来又约不到人，于是就自己过去告诉服务员“两位，来个芝士排骨”然后自己吃掉。服务员一定觉得我被放了鸽子于是化悲痛为食欲……</p>
-<p>她看着我笑。</p>
-<p>我们走进电影院。当博子和茂一起踩在雪地上时，我就发现了问题——电影院的空调温度开得实在太低，冷库一般的电影院和银幕上的雪景双重夹击，简直像是4D体感电影。她只穿了T恤，我也没穿外套，我都能感觉到她的冷。</p>
-<p>但我也没什么办法。</p>
-<p>她的手搭在座椅侧边，我的手也搭在座椅侧边。她可以拉我的手，我也可以拉她的手。但我们谁都没有动。我想：她是那种想要专注看电影的人吧？她不愿意被打扰吧？……</p>
-<p>于是我和她相安无事地看完了电影。</p>
-<p>回来的路上我们骑着车，漫无边际地聊天。我想到看过的一些故事，此时说不出来的话未来就永远说不出来了。我的心跳得很快，我想要装作不经意地开口但一开口就暴露无余。我说：“其实我刚才一直在想，要不要拉你的手。”</p>
-<p>粉色的小车轮嘎吱一响，她停下车。她抬头看了我一眼，别开目光，说：“我也在想一样的事。”</p>
-<p>听到那句话时我就知道我和她会在一起。</p>
-<p>认识她之前，我觉得世界上的所有人在特定情况下可以和所有人相爱。只要经过一段时间的相处创造出共同的经历，性格爱好过往什么的一切差异都可以被抹平。我的脸盲可能是这种观念的成因之一，在脸盲眼里所有人在和我创造共同回忆之前都是相似的，在相处中这些人才逐渐有了差别。而在共同回忆消失在时间里之后，他们也会逐渐泯灭为芸芸众生之一。</p>
-<p>哪怕是认识她、与她相爱，乃至和她分手之后我依然这么想。</p>
-<p>我爱她不是因为非她不可，我想。可能因为我从来没谈过恋爱，可能因为我孤独。恋爱没办法脱离情境考虑，恋爱从来不是什么“非你不可”的事情。</p>
-<p>直到现在我与她已经分手三个月，脸盲症公平地吞噬所有逐渐生疏的面孔。</p>
-<p>凌晨四点太阳还远远地在地平线后面。她穿着墨绿色的长裙，像是油画里的人。她点点头，我说“走吧”。</p>
-<p>太阳还没升起来。我前一天突发奇想，想去实验楼顶看日出。</p>
-<p>太阳升起来时我和她并肩仰头，她坐在楼梯上，墨绿色的裙摆垂下来。她的鼻子小小的，耳朵在朝阳中是近乎透明的红色。我觉得我爱她。</p>
-<p>我的室友说“你要是约妹子看这个，你就是大傻子。”</p>
-<p>我说：“但她同意了！”</p>
-<p>那是个红色题材的话剧，学校话剧社出品，是每年固定上演的年度节目以至于免费送都没人看。但那场话剧确实很感人，而且她坐在我旁边。</p>
-<p>——而且似乎她真的喜欢。</p>
-<p>我们聊着那部话剧，聊着历史和现在。我讲了我在小城市里并不富裕但快乐的一家人，她谈起她高三时并不看好她乃至于打压她的变态老师。我们一路走回她的寝室楼下。</p>
-<p>我和她自习，礼貌地隔了一张桌子。我觉得与其被她讨厌不如让她觉得我是个不解风情的钢铁直男。<br>自习之后我和她吃饭，她说随便，于是午饭是我选的。番茄黑鱼面，皎洁的鱼片在酸甜的番茄汤里沉浮。</p>
-<p>她说：“如果不是和你，我可能永远不会尝试这个。”</p>
-<p>我问：“你要不要考虑和我在一起？”</p>
-<p>……</p>
-<p>她说：“我们在一起试试吧。”</p>
-<p>我买了一束玫瑰花，红色的，像平安夜的苹果。我送到她寝室楼下，她又一次下楼了。</p>
-<p>我说：“明天考六级吧？——祝你顺利。”</p>
-<p>她有点惊讶，但最后说：“好啊。”</p>
-<p>我和她交换了课程表，于是我知道她会在哪个教室上哪一节通识课。我在那间教室的角落里坐着，一次又一次扫视整间教室。</p>
-<p>她出现了。</p>
-<p>“惊不惊喜？”我问。我坐在她旁边，就是旁边，中间没有隔着一个位置。</p>
-<p>这就是校园恋爱的感觉吗，我想。我飘飘欲仙。<br>她问我：“你有时间吗？可以下楼吗？”</p>
-<p>我兴冲冲地下了楼。</p>
-<p>她说：“我们分手吧。”</p>
-<p>那之后我消沉了半个月。我一天打8个小时的手机游戏，熄灯了就在黑暗中玩，手机屏幕的光照在我空白一片的脸上。我赶着主线任务的进度，体力没了就氪金，然后继续。今天的奖励刷完了也没关系，就算没有奖励我也会继续玩。</p>
-<p>那时候是期末，考试周将近。</p>
-<p>但我绝不会责怪她赶在考试周分手。我自己清楚，如果她不是在考试周分手或许我还不会这么消沉。我本来就没太学好，她的分手或许才正是给了我一个逃避的借口。</p>
-<p>绝不是非她不可，她不是特殊的。</p>
-<p>就像我突然沉迷手机游戏一样，突然有一天我再也没玩过。我疯狂复习，在期末面前开始垂死挣扎。我的好几科悬在挂科边缘摇摇欲坠，但最后奇迹般地稳住了。</p>
-<p>不是因为她，因为那之后我和她再也没了联系。</p>
-<p>考试周的最后一门课之后，我分手以来第一次打开和她的聊天框。我数了数我和她说过的早安和晚安。我笑出声。</p>
-<p>其实我和她在一起，算上第一天的白天和最后一天的夜晚，满打满算不过九天功夫。</p>
-<p>……为什么？从哪里出了问题？</p>
-<p>去实验楼看日出那次纯属我临时起意，我之前没看过日出也没去过实验楼，以至于不知道最高的实验楼楼顶其实是上锁的。我们转了一大圈终于找到了楼顶的入口，却发现我们没有钥匙。那时候太阳已经快升起来了，晨光照着她的脸。她皱着眉头。</p>
-<p>她说：“我们去低一点的楼吧。”</p>
-<p>但低一点的楼同样楼顶上锁，学校为了防止大学生跳楼还真是不遗余力。最后我和她坐在通往顶层的楼道里看窗户外的日出，楼道里没有通风，蚊子极多，在她露出的小腿周围转悠。</p>
-<p>但她在笑，我也假装为了日出的一切糟心事不存在。</p>
-<p>在番茄鱼面前，我说：“你要不要考虑和我在一起？”</p>
-<p>那之前我抓着室友喝酒，问他我该不该表白。我说我喜欢和她聊天，我担心分手之后连朋友都做不了。室友烦了，说喜欢你就去追啊，她肯定是喜欢你的。</p>
-<p>她肯定是喜欢我的，但她的表情好像最后的审判即将到来。</p>
-<p>她说：“对不起。”</p>
-<p>我有点慌。我说：“你可以再考虑考虑，我不着急的。”</p>
-<p>她说：“对不起。”</p>
-<p>她的父母都是医生，虽然谈不上喜欢这个工作却兢兢业业地干了半辈子，哪怕生活一次又一次被随时可能响起的呼叫铃打散打碎。他们相亲相识相爱，在工作的间隙生下女儿，四年之后给女儿又添了一个弟弟。然后他们去工作了，让女儿照顾好自己。</p>
-<p>女儿只能照顾好自己，同时照顾好更加无法自理的弟弟。</p>
-<p>她尽力把自己照顾得很好，为自己建造起了坚实的壁垒。她自己做饭，自己打理家务，自己给弟弟开家长会。她和弟弟吵架，然后在父母回家之前假装无事发生。她独自面对打压她的变态老师，她知道如果父母介入应该能改变些什么。但她觉得没必要让他们介入。</p>
-<p>她听见堡垒外面有人敲门。我说：“我可能没办法一直陪你。但我们为什么不试试呢？我会尽力的……”</p>
-<p>她从内部打量着自己的堡垒，看着那些花了十几年搭起来的大梁，承载着厚厚的穹顶。如果有人想进来，她可以把穹顶的力量从大梁上卸一些下来。</p>
-<p>但如果那个人又走了呢？</p>
-<p>如果那个人走的时候，她还来不及把堡垒恢复原样呢？</p>
-<p>我不知道从“对不起”到“我们在一起试试吧”之间的几天发生了什么。</p>
-<p>但六级前的那个晚上和查好时间的那次通识课上，她已经走进了自己的堡垒，想要在那里度过一段安静的独处时光。</p>
-<p>“我能进来吗？”有人在外面问。</p>
-<p>她开了门。那人开心地左顾右盼，但她觉得那人格格不入。</p>
-<p>“……如果，”我试着讨价还价，“如果我以后找你之前事先预约……我们还能在一起吗？”</p>
-<p>她有点悲伤地看着我。她没戴金黄色的发带。</p>
-<p>她说：“算了吧。”</p>
-<p>她说了很多个“对不起”之后离开了的那天，我想我们不会这样结束。过几天就算她不来找我，我也要去找她。</p>
-<p>她说了一个“算了吧”之后离开了的那天，我想我和她就这样结束了。</p>
-<p>八个“早安”，八个“晚安”。我们在一起九天。</p>
-<p>我还会想她，但我再也没有见过她。</p>
-<p>……直到那天课间，我想不起来向我打招呼的女孩到底是不是她。</p>
-<p>大学很大。我想。我和她没理由再见面。</p>
-<p>世界很大。我想。我会遇见新的人。</p>
-<p>想到向我打招呼的女孩可能是她之后我猛地一个扭头，差点扭到脖子。但那个人已经消失在了人群之中。</p>
-<p>有那么一瞬间我完全相信那就是她，就在刚才冲我笑着问好。我几乎要马上掏出手机给她发消息，问她：“你还好吗？我刚才是不是看见了你？”</p>
-<p>她会说“是啊，我还打招呼了呢。”</p>
-<p>然后我会一发不可收拾。我会告诉她我最近看的电影，把我拍下来的花发给她看，吐槽乱提需求的蠢老师。我会犹豫自己是不是说得太多显得太热情，但那些东西就是像决堤一样喷涌而出。我不在乎她会怎么想，因为我只是孤独。孤独的人有任性的特权。</p>
-<p>……不行，我不会那么做。我会道歉，说我第一次学着和人相处，承诺以后不会入侵她的私人领域，只在她想要支持时给她的堡垒搭一把手。我会说对不起让你不舒服了，但我经常想你，那之后我没遇见过和你一样好的人。以后我还可以和你做朋友、和你聊天吗？</p>
-<p>然后我的理智回笼。我的脑子逐渐淡忘了向我打招呼的人和她的脸，将功补过地列出了从发梢到眼角的一条又一条证据说明两个人并不是同一个人。最后脑子一锤定音：你还有一节课呢，和她聊天是需要时间的。等有空再联系她吧。</p>
-<p>我同意我脑子的观点。</p>
-<p>但不甘心地补了一句：有空要去联系她啊。</p>
-<p>那之后我去过她的宿舍楼下。正当理由是修车，一个假期之后再回到学校，我的自行车爆了胎，而她的宿舍楼下就有个修车棚。</p>
-<p>我推车走进她的宿舍园区时，发现有大群学生在那里准备去开学典礼。我回想自己准备去开学典礼的时间，发现差不多正是一年之前。</p>
-<p>我确信她就在乱哄哄挤在一起的学生之中。我们可能只隔了几米，她甚至可能已经注意到了推着车的我。但什么也没有发生。</p>
-<p>“……你这车型号比较特别啊，”修车棚老板狡猾地笑了，“车胎贵一些。”</p>
-<p>我说：“我知道哪里买。”</p>
-<p>“那你去买啊。”老板不为所动。</p>
-<p>我推着车走出去，放狠话说我还会回来的。</p>
-<p>我在校外找到了另一家修车棚，老板要价便宜十块钱。我开开心心地省下了十块钱，买了一袋苹果，回到她楼下的修车棚，望着闹哄哄的学生们。</p>
-<p>我没看到她。</p>
-<p>但临走时我以她的宿舍楼为背景拍了一张照片，发了朋友圈：“我的自行车起死回生！”</p>
-<p>我用力咀嚼艳红色的果皮，苹果汁在我的口腔里爆开。她上课时不看消息，她的朋友圈一片空白。我知道她不会看，我也知道自己还是会发。</p>
-<p>我总会遇见一个合适的人，我想，想过很多遍。或许我不爱她，但她爱我，于是我慢慢地爱她。或许她不爱我，但我爱她，于是她慢慢地爱我。或许我们已经错过彼此足够长时间，但毕竟未来更长。说不定我甚至没记住她的脸，直到那张脸随着时间铭刻在我我的记忆里。或许我们一开始不合适，但最后总会合适。我们相爱，吵架，发现分开还不如在一起。我们结婚，吵架，觉得离婚太麻烦还不如凑合过。我们生孩子，吵架，发现剩下的时间还不如在一起的时间长。</p>
-<p>一般初恋很难走到最后，因为初恋就是为了让你们互相伤害的。你知道了怎么被伤害，就不会伤害未来的其他人。</p>
-<p>但我爱她的方式是我希望别人爱我的。我不知道我还能怎么爱。</p>
-<p>一般人们放不下过去，因为回忆会给自己加上滤镜。过去说不定糟透了，但想起来时还是那么美好。</p>
-<p>我还是想见她，但我已经认不出来她了。</p>
-<p>第一节课是乒乓球，然后是物理课。运动之后总是容易睡着，我在自动售货机买了瓶柠檬汽水，带着汽水在教室里找了个位置。每次睡意漫上来，我就喝一口。</p>
-<p>上个学期我特别喜欢这种汽水。不知道是不是换了配方，汽水这学期味道好像变了。刚开始的几口味道差不多，但越往后味道越奇怪，好像加水稀释过后又不知足地补上了三倍的二氧化碳。喝到最后我总觉得无法忍受，又为了不浪费食物强行喝完。这一罐也一样，喝到最后我猛灌一口，差点自己呛到自己。</p>
-<p>下次不喝了，我想。</p>
-<p>其实上次我也是这么想的。但今天看到售货机里熟悉的黄色罐子，我又想：说不定这次我就找到了上学期熟悉的感觉呢？</p>
-<p>老师还算有良心，提前下了课。我跨上自行车，冲向食堂，胡乱打量着一路上经过的人。</p>
-<p>——我突然看见了她。</p>
-<p>操他妈的！我没想到我能一眼就认出来她。</p>
-<p>我构思过如果哪天我骑着自行车从看见她在我前方的背影，我要怎么办。</p>
-<p>我想，我要骑过她，直到她也能认出前面的我，却只能看着我远去。然后我要一歪车把，摔倒在她面前，不管车筐里的东西会不会洒了一地，像是那天金黄色的银杏树叶。我会手忙脚乱地把那些东西捡起来，她会犹豫几秒之后和我一起捡。我们的手指会相互避开。最后我们站起来，我会低头看她，告诉她我很想她。</p>
-<p>但我从来没见过她的背影。可能没遇见过，可能遇见了没认出来。</p>
-<p>但我一眼就认出了她。一米五，背着沉重的书包步行，抿着嘴唇。她的头发像我记忆中那样扎成马尾，发梢像我记忆中那样有染过棕色的遗迹。她低着头，但那张脸和我记忆中一模一样。</p>
-<p>她一点都没变。</p>
-<p>我能认出来她。不仅如此，我还能遇见她——这么大的学校，我能再遇见她。</p>
-<p>我的自行车遵循着惯性向前。她低着头，她没看见我。</p>
-<p>或许这是命运女神给我的机会。</p>
-<p>我骑过去，骑过她。</p>
-<p>我想：我刚喝了柠檬汽水，现在嘴里还有酸味，不合适。</p>
-<p>下次遇见她，我会说的。</p>
-<p>2021.10.29</p>
-
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2021/10/29/loving-story/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
       
     </div>
 
@@ -619,12 +474,32 @@ B=
                 <i class="far fa-calendar"></i>
               </span>
               <span class="post-meta-item-text">发表于</span>
-              
 
-              <time title="创建时间：2021-10-29 11:42:07 / 修改时间：19:22:46" itemprop="dateCreated datePublished" datetime="2021-10-29T11:42:07+08:00">2021-10-29</time>
+              <time title="创建时间：2021-10-29 11:42:07" itemprop="dateCreated datePublished" datetime="2021-10-29T11:42:07+08:00">2021-10-29</time>
             </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-11-03 13:09:49" itemprop="dateModified" datetime="2021-11-03T13:09:49+08:00">2021-11-03</time>
+              </span>
 
-          
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>5.9k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>5 分钟</span>
+            </span>
 
         </div>
       </header>
@@ -636,51 +511,14 @@ B=
 
       
           <p>最近数值分析课遇到一个计算希尔伯特矩阵条件数随维数变化关系情况的问题，在此对其迭代解法的程序实现做一些小小的讨论</p>
-<h2 id="希尔伯特矩阵"><a href="#希尔伯特矩阵" class="headerlink" title="希尔伯特矩阵"></a>希尔伯特矩阵</h2><p><a target="_blank" rel="noopener" href="https://zh.wikipedia.org/zh-hans/%E5%B8%8C%E5%B0%94%E4%BC%AF%E7%89%B9%E7%9F%A9%E9%98%B5">希尔伯特矩阵</a>是一种系数都是单位分数的方块矩阵，具体来说希尔伯特矩阵的第$i$行$j$列元素为：</p>
-<script type="math/tex; mode=display">
-H_{ij}=\frac{1}{i+j-1}</script><p>因此代码中可以通过双重循环构造矩阵（Golang实现）<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">genHilbertMatrix</span><span class="params">(n <span class="keyword">int</span>)</span> [][]<span class="title">float64</span></span> &#123;</span><br><span class="line">	H := <span class="built_in">make</span>([][]<span class="keyword">float64</span>, n)</span><br><span class="line">	<span class="keyword">for</span> i := <span class="keyword">range</span> H &#123; <span class="comment">//初始化矩阵</span></span><br><span class="line">		H[i] = <span class="built_in">make</span>([]<span class="keyword">float64</span>, n)</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">for</span> i := <span class="number">0</span>; i &lt; n; i++ &#123;</span><br><span class="line">		<span class="keyword">for</span> j := <span class="number">0</span>; j &lt; n; j++ &#123;</span><br><span class="line">			x := <span class="keyword">float64</span>(i + j + <span class="number">1</span>)</span><br><span class="line">			H[i][j] = <span class="number">1.0</span> / x</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> H</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<h2 id="求取最大和最小特征值"><a href="#求取最大和最小特征值" class="headerlink" title="求取最大和最小特征值"></a>求取最大和最小特征值</h2><p>条件数K的定义为，对于任意范式$||·||$和非奇异矩阵$A$，有</p>
-<script type="math/tex; mode=display">
-K(A)=\left\|A\right\|\cdot\left\|A^{-1}\right\|</script><p>而对于<a target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/%E6%AD%A3%E5%AE%9A%E7%9F%A9%E9%98%B5">正定矩阵</a>，可以证明条件数为</p>
-<script type="math/tex; mode=display">
-K(A)=\left|\frac{\lambda_{max}(A)}{\lambda_{min}(A)}\right|</script><p>很明显，希尔伯特矩阵是一个正定矩阵，因此只要求出其最大和最小特征值即可计算出条件数</p>
-<h3 id="最大特征值计算"><a href="#最大特征值计算" class="headerlink" title="最大特征值计算"></a>最大特征值计算</h3><p>这里我们使用幂法进行计算，注意此时的前提条件为</p>
-<script type="math/tex; mode=display">
-\left|\lambda_1\right| > \left|\lambda_2\right| \geq \left|\lambda_3\right|\geq \cdots \geq \left|\lambda_n\right|</script><p>我们构造一系列向量序列，有</p>
-<script type="math/tex; mode=display">
-\left\{
-\begin{array}{**lr**}
-\vec{v_0}\in R^n\quad And\quad\vec{v_0}\neq\vec{0} \\
-\vec{v_1}=A\vec{v_0} \\
-\vec{v_{k+1}}=A\vec{v_k}\ (k=0,1,\cdots,n)
-\end{array}
-\right.</script><p>可以证明，</p>
-<script type="math/tex; mode=display">
-\lim_{k\to\infty}\frac{\left\|\vec{v_{k+1}}\right\|_i}{\left\|\vec{v_{k}}\right\|_i}=\lambda_1</script><p>同时在计算机计算过程中，为了防止数据过大导致的越界， 我们可以对$\vec{v_k}$进行规范化，即令</p>
-<script type="math/tex; mode=display">
-\vec{u_k}=\frac{\vec{v_k}}{\left\|\vec{v_k}\right\|_\infty}</script><p>然后对$\vec{u_k}$进行迭代与规范化操作</p>
-<p>同时，我们可以证明</p>
-<script type="math/tex; mode=display">
-\lim_{k\to\infty}\left\|\vec{v_k}\right\|_\infty=\lambda_1</script><p>因此我们可以得出以下代码来计算最大特征值<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">getMaxLambda</span><span class="params">(mat [][]<span class="keyword">float64</span>, n <span class="keyword">int</span>)</span> <span class="title">float64</span></span> &#123;</span><br><span class="line">	<span class="keyword">const</span> MaxIteration = <span class="number">10000</span></span><br><span class="line">	<span class="keyword">const</span> MaxError = <span class="number">0.00001</span></span><br><span class="line">	v0 := <span class="built_in">make</span>([]<span class="keyword">float64</span>, n) <span class="comment">//生成迭代初始向量</span></span><br><span class="line">	v0[<span class="number">0</span>] = <span class="number">1.0</span></span><br><span class="line">	lambda := <span class="number">0.0</span></span><br><span class="line">	<span class="keyword">for</span> lambda0, counter := <span class="number">1.0</span>, <span class="number">1</span>; math.Abs(lambda-lambda0) &gt; MaxError &amp;&amp; counter &lt; MaxIteration; counter++ &#123; <span class="comment">//迭代边界，次数限制与误差限制</span></span><br><span class="line">		lambda0 = lambda</span><br><span class="line">		u := <span class="built_in">make</span>([]<span class="keyword">float64</span>, n)  <span class="comment">//生成迭代后向量</span></span><br><span class="line">		<span class="keyword">for</span> i := <span class="number">0</span>; i &lt; n; i++ &#123; <span class="comment">//计算u=Av</span></span><br><span class="line">			u[i] = <span class="number">0.0</span></span><br><span class="line">			<span class="keyword">for</span> j := <span class="number">0</span>; j &lt; n; j++ &#123;</span><br><span class="line">				u[i] += mat[i][j] * v0[j]</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">		lambda = <span class="number">0.0</span></span><br><span class="line">		<span class="keyword">for</span> i := <span class="number">0</span>; i &lt; n; i++ &#123; <span class="comment">//找到最大值</span></span><br><span class="line">			<span class="keyword">if</span> lambda &lt; math.Abs(u[i]) &#123;</span><br><span class="line">				lambda = math.Abs(u[i])</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">for</span> i := <span class="number">0</span>; i &lt; n; i++ &#123; <span class="comment">//进行规范化</span></span><br><span class="line">			v0[i] = u[i] / lambda</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> lambda</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<h3 id="计算最小特征值"><a href="#计算最小特征值" class="headerlink" title="计算最小特征值"></a>计算最小特征值</h3><p>幂法十分完美地解决了最大特征值的问题，而对于最小特征值，我们可以很自然的想到只要求取$A^{-1}$的最大特征值，其倒数就是原矩阵的最小特征值<br>但这依然有些麻烦，因此我们可以使用$LU$分解绕过对$A$求逆的过程进行迭代，即通过解方程组：</p>
-<script type="math/tex; mode=display">
-\left\{
-\begin{array}{**lr**}
-L\vec{w}=\vec{v} \\
-U\vec{u}=\vec{w} \\
-\end{array}
-\right.</script><p>即可通过$\vec{v}$得出$\vec{u}$的值</p>
-<h3 id="LU-分解"><a href="#LU-分解" class="headerlink" title="$LU$分解"></a>$LU$分解</h3><p>事实上，将$A$进行初等行变换之后变成一个上三角矩阵，其变换矩阵就是一个下三角矩阵，这就是所谓$LU$分解</p>
-<p>我们可以通过所谓杜尔利特算法进行分解，代码如下：</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">LUDecomposition</span><span class="params">(mat [][]<span class="keyword">float64</span>, n <span class="keyword">int</span>)</span> <span class="params">([][]<span class="keyword">float64</span>, [][]<span class="keyword">float64</span>)</span></span> &#123;</span><br><span class="line">	L, U := <span class="built_in">make</span>([][]<span class="keyword">float64</span>, n), <span class="built_in">make</span>([][]<span class="keyword">float64</span>, n)</span><br><span class="line">	<span class="keyword">for</span> i := <span class="keyword">range</span> mat &#123;</span><br><span class="line">		L[i], U[i] = <span class="built_in">make</span>([]<span class="keyword">float64</span>, n), <span class="built_in">make</span>([]<span class="keyword">float64</span>, n)</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">for</span> i := <span class="number">0</span>; i &lt; n; i++ &#123;</span><br><span class="line">		L[i][i] = <span class="number">1</span></span><br><span class="line">		<span class="keyword">if</span> i == <span class="number">0</span> &#123;</span><br><span class="line">			U[<span class="number">0</span>][<span class="number">0</span>] = mat[<span class="number">0</span>][<span class="number">0</span>]</span><br><span class="line">			<span class="keyword">for</span> j := <span class="number">1</span>; j &lt; n; j++ &#123;</span><br><span class="line">				U[<span class="number">0</span>][j] = mat[<span class="number">0</span>][j]</span><br><span class="line">				L[j][<span class="number">0</span>] = mat[<span class="number">0</span>][j] / U[<span class="number">0</span>][<span class="number">0</span>]</span><br><span class="line">			&#125;</span><br><span class="line">		&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">			<span class="keyword">for</span> j := i; j &lt; n; j++ &#123; <span class="comment">//生成U</span></span><br><span class="line">				temp := <span class="number">0.0</span></span><br><span class="line">				<span class="keyword">for</span> k := <span class="number">0</span>; k &lt; i; k++ &#123;</span><br><span class="line">					temp += L[i][k] * U[k][j]</span><br><span class="line">				&#125;</span><br><span class="line">				U[i][j] = mat[i][j] - temp</span><br><span class="line">			&#125;</span><br><span class="line">			<span class="keyword">for</span> j := i + <span class="number">1</span>; j &lt; n; j++ &#123; <span class="comment">//生成L</span></span><br><span class="line">				temp := <span class="number">0.0</span></span><br><span class="line">				<span class="keyword">for</span> k := <span class="number">0</span>; k &lt; i; k++ &#123;</span><br><span class="line">					temp += L[j][k] * U[k][i]</span><br><span class="line">				&#125;</span><br><span class="line">				L[j][i] = (mat[j][i] - temp) / U[i][i]</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> L, U</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h3 id="回到最小特征值计算"><a href="#回到最小特征值计算" class="headerlink" title="回到最小特征值计算"></a>回到最小特征值计算</h3><p>得到了$LU$矩阵，我们只需要反解出$\vec{u}$的值即可迭代到我们需要的精度，代码如下</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">getMinLambda</span><span class="params">(mat [][]<span class="keyword">float64</span>, n <span class="keyword">int</span>)</span> <span class="title">float64</span></span> &#123;</span><br><span class="line">	<span class="keyword">const</span> MaxIteration = <span class="number">10000</span></span><br><span class="line">	<span class="keyword">const</span> MaxError = <span class="number">0.00001</span></span><br><span class="line">	L, U := LUDecomposition(mat, n)</span><br><span class="line">	v0 := <span class="built_in">make</span>([]<span class="keyword">float64</span>, n) <span class="comment">//生成迭代初始向量</span></span><br><span class="line">	v0[<span class="number">0</span>] = <span class="number">1.0</span></span><br><span class="line">	lambda := <span class="number">0.0</span></span><br><span class="line">	<span class="keyword">for</span> lambda0, counter := <span class="number">1.0</span>, <span class="number">1</span>; math.Abs(lambda-lambda0) &gt; MaxError &amp;&amp; counter &lt; MaxIteration; counter++ &#123; <span class="comment">//迭代边界，次数限制与误差限制</span></span><br><span class="line">		lambda0 = lambda</span><br><span class="line">		w := <span class="built_in">make</span>([]<span class="keyword">float64</span>, n)</span><br><span class="line">		u := <span class="built_in">make</span>([]<span class="keyword">float64</span>, n)</span><br><span class="line">		<span class="keyword">for</span> i := <span class="number">0</span>; i &lt; n; i++ &#123; <span class="comment">//解出Lw=v</span></span><br><span class="line">			temp := <span class="number">0.0</span></span><br><span class="line">			<span class="keyword">for</span> j := <span class="number">0</span>; j &lt; i; j++ &#123;</span><br><span class="line">				temp += L[i][j] * w[j]</span><br><span class="line">			&#125;</span><br><span class="line">			w[i] = v0[i] - temp</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">for</span> i := n - <span class="number">1</span>; i &gt; <span class="number">-1</span>; i-- &#123; <span class="comment">//解出Uu=w</span></span><br><span class="line">			temp := <span class="number">0.0</span></span><br><span class="line">			<span class="keyword">for</span> j := i; j &lt; n; j++ &#123;</span><br><span class="line">				temp += U[i][j] * u[j]</span><br><span class="line">			&#125;</span><br><span class="line">			u[i] = (w[i] - temp) / U[i][i]</span><br><span class="line">		&#125;</span><br><span class="line">		lambda = <span class="number">0.0</span></span><br><span class="line">		<span class="keyword">for</span> i := <span class="number">0</span>; i &lt; n; i++ &#123; <span class="comment">//找到最大值</span></span><br><span class="line">			<span class="keyword">if</span> lambda &lt; math.Abs(u[i]) &#123;</span><br><span class="line">				lambda = math.Abs(u[i])</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">for</span> i := <span class="number">0</span>; i &lt; n; i++ &#123; <span class="comment">//进行规范化</span></span><br><span class="line">			v0[i] = u[i] / lambda</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> lambda</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h2 id="计算条件数"><a href="#计算条件数" class="headerlink" title="计算条件数"></a>计算条件数</h2><p>有了上面的前置工作，最后一步计算条件数就显得十分简单，不过我们在$getMinLambda()$中返回的是最小特征值的倒数，因此在最后直接两者相乘即可，最后代码如下</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">condNum</span><span class="params">(n <span class="keyword">int</span>)</span> <span class="title">float64</span></span> &#123;</span><br><span class="line">	mat := genHilbertMatrix(n)</span><br><span class="line">	lambda1 := getMaxLambda(mat, n)</span><br><span class="line">	lambda2 := getMinLambda(mat, n)</span><br><span class="line">	cond := lambda1 * lambda2</span><br><span class="line">	<span class="keyword">return</span> cond</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h2 id="运行结果"><a href="#运行结果" class="headerlink" title="运行结果"></a>运行结果</h2><p><img src="/images/NAimg.png" alt=""></p>
-<p>通过与matlab输出进行对比，发现数据精度能达到四到五位</p>
-<p><img src="/images/MLimg.png" alt=""></p>
-
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2021/10/29/hilbert/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
       
     </div>
 
@@ -823,6 +661,16 @@ U\vec{u}=\vec{w} \\
     <i class="fa fa-heart"></i>
   </span>
   <span class="author" itemprop="copyrightHolder">Wandleshen</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">22k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">20 分钟</span>
 </div>
 
         
@@ -935,5 +783,8 @@ U\vec{u}=\vec{w} \\
 
   
 
+  
+  <script type="text/javascript" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script>
+  
 </body>
 </html>
