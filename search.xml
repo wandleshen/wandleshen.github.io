@@ -19,6 +19,67 @@
       </tags>
   </entry>
   <entry>
+    <title>图像信息处理作业Assignment3</title>
+    <url>/2021/11/13/%E5%9B%BE%E5%83%8F%E4%BF%A1%E6%81%AF%E5%A4%84%E7%90%86%E4%BD%9C%E4%B8%9A2/</url>
+    <content><![CDATA[<p>第三次图像信息处理作业解析，这次要对直方图动手了。</p>
+<span id="more"></span>
+<h2 id="Assignment-3作业要求"><a href="#Assignment-3作业要求" class="headerlink" title="Assignment-3作业要求"></a>Assignment-3作业要求</h2><ul>
+<li>Image logarithmic operation for visibility enhancement</li>
+<li>Histogram equalization<h2 id="作业分析"><a href="#作业分析" class="headerlink" title="作业分析"></a>作业分析</h2><h3 id="图像对数强化"><a href="#图像对数强化" class="headerlink" title="图像对数强化"></a>图像对数强化</h3></li>
+</ul>
+<p>这玩意儿老师上课貌似没讲，检索了一下大概就是通过如下的公式进行操作</p>
+<script type="math/tex; mode=display">
+S=c\times\log(1+r) \\
+where,\qquad\qquad\qquad\\ S=\text{output pixel value} \\
+C=\text{scaling constant} \\
+R=\text{input pixel value}\\</script><p>在这里，我们定义如下的常数$C$</p>
+<script type="math/tex; mode=display">
+C=\frac{255}{\log(1+\text{max input pixel value})}</script><p>通过加一我们可以保证所有的$C$和$S$是非负数</p>
+<p>首先先求出$C$</p>
+<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="keyword">unsigned</span> <span class="keyword">char</span>* max;</span><br><span class="line"><span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; height; i++) &#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> j = <span class="number">0</span>; j &lt; width; j++) &#123;</span><br><span class="line">        <span class="keyword">unsigned</span> <span class="keyword">char</span> data = *(biData + lineBytes * (height - <span class="number">1</span> - i) / <span class="number">3</span> + j);</span><br><span class="line">        max = max &gt; data ? max : data;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">double</span> c = <span class="number">255.0</span> / (<span class="built_in">log</span>(<span class="number">1</span> + max));</span><br></pre></td></tr></table></figure>
+<p>然后代入公式</p>
+<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="keyword">unsigned</span> <span class="keyword">char</span>* logData = <span class="keyword">new</span> <span class="keyword">unsigned</span> <span class="keyword">char</span>[lineBytes * height / <span class="number">3</span>];</span><br><span class="line"><span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; height; i++) &#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> j = <span class="number">0</span>; j &lt; width; j++) &#123;</span><br><span class="line">        <span class="keyword">unsigned</span> <span class="keyword">char</span> r = *(biData + lineBytes * (height - <span class="number">1</span> - i) / <span class="number">3</span> + j)</span><br><span class="line">        *(logData + lineBytes * (height - <span class="number">1</span> - i) / <span class="number">3</span> + j) = c * <span class="built_in">log</span>(<span class="number">1</span> + r);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这样我们就获得了log后的图像</p>
+<img src="/2021/11/13/%E5%9B%BE%E5%83%8F%E4%BF%A1%E6%81%AF%E5%A4%84%E7%90%86%E4%BD%9C%E4%B8%9A2/gray.bmp" class="" title="This is the gray image">
+<img src="/2021/11/13/%E5%9B%BE%E5%83%8F%E4%BF%A1%E6%81%AF%E5%A4%84%E7%90%86%E4%BD%9C%E4%B8%9A2/log.bmp" class="" title="This is the log image">
+<h3 id="直方图均衡化"><a href="#直方图均衡化" class="headerlink" title="直方图均衡化"></a>直方图均衡化</h3><p>考虑一个离散的灰度图像$x$，让$n_i$ 表示灰度$i$出现的次数，这样图像中灰度为$i$的像素的出现概率是</p>
+<script type="math/tex; mode=display">
+\ p_x(i) = p(x=i) = \frac{n_i}{n},\quad 0 \le i < L</script><p>$L$ 是图像中所有的灰度数（通常为256），$n$ 是图像中所有的像素数，$p_x(i)$实际上是像素值为$i$的图像的直方图，归一化到 [0,1]。</p>
+<p>把对应于$p_x$的累积分布函数，定义为：</p>
+<script type="math/tex; mode=display">
+\ cdf_x(i) = \sum_{j=0}^i p_x(j),</script><p>是图像的累计归一化直方图。</p>
+<p>我们创建一个形式为$ y= T(x)$ 的变换，对于原始图像中的每个值它就产生一个$y$，这样 $y$的累计概率函数就可以在所有值范围内进行线性化，转换公式定义为：</p>
+<script type="math/tex; mode=display">
+\ cdf_y(i) = iK</script><p>对于常数$K$。CDF的性质允许我们做这样的变换（参见逆分布函数）；定义为</p>
+<script type="math/tex; mode=display">
+\ cdf_y(y^\prime) = cdf_y(T(k)) = cdf_x(k)</script><p>其中$k$属于区间 [0,L)。注意 T 将不同的等级映射到${0..1}$​域，为了将这些值映射回它们最初的域，需要在结果上应用下面的简单变换：</p>
+<script type="math/tex; mode=display">
+\ y^\prime = y \cdot(\max\{x\} - \min\{x\}) + \min\{x\}</script><p>上面描述了灰度图像上使用直方图均衡化的方法，但是通过将这种方法分别用于图像RGB颜色值的红色、绿色和蓝色分量，从而也可以对彩色图像进行处理。</p>
+<p>首先，我们需要先得到直方图</p>
+<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="keyword">unsigned</span> <span class="keyword">char</span>* histData = <span class="keyword">new</span> <span class="keyword">unsigned</span> <span class="keyword">char</span>[lineBytes * height / <span class="number">3</span>];</span><br><span class="line"><span class="keyword">int</span> hist[<span class="number">256</span>] = &#123;<span class="number">0</span>&#125;, eqHist[<span class="number">256</span>] = &#123;<span class="number">0</span>&#125;;</span><br><span class="line"><span class="keyword">int</span> size = height * width;</span><br><span class="line"><span class="keyword">double</span> fpHist[<span class="number">256</span>] = &#123;<span class="number">0</span>&#125;, eqHistTemp[<span class="number">256</span>] = &#123;<span class="number">0</span>&#125;;</span><br><span class="line"><span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; height; i++) &#123; <span class="comment">//计算直方图</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> j = <span class="number">0</span>; j &lt; width; j++) &#123;</span><br><span class="line">        <span class="keyword">unsigned</span> <span class="keyword">char</span> GrayIndex = *(biData + lineBytes * (height - <span class="number">1</span> - i) / <span class="number">3</span> + j);</span><br><span class="line">        hist[GrayIndex]++;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>然后，我们计算灰度分布和累计直方图分布</p>
+<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">256</span>; i++) &#123; <span class="comment">//计算灰度分布密度</span></span><br><span class="line">    fpHist[i] = (<span class="keyword">double</span>)hist[i] / (<span class="keyword">double</span>)size;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">256</span>; i++) &#123; <span class="comment">//计算累计直方图分布</span></span><br><span class="line">    <span class="keyword">if</span> (i == <span class="number">0</span>) &#123;</span><br><span class="line">        eqHistTemp[i] = fpHist[i];</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span> &#123;</span><br><span class="line">        eqHistTemp[i] = eqHistTemp[i - <span class="number">1</span>] + fpHist[i];</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>最后，我们可以直接得出映射关系</p>
+<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="comment">//累计分布取整，保存计算出来的灰度映射关系</span></span><br><span class="line"><span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">256</span>; i++) &#123;</span><br><span class="line">    eqHist[i] = (<span class="keyword">int</span>)(<span class="number">255.0</span> * eqHistTemp[i] + <span class="number">0.5</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; height; i++) &#123; <span class="comment">//进行灰度映射均衡化</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> j = <span class="number">0</span>; j &lt; width; j++) &#123;</span><br><span class="line">        <span class="keyword">unsigned</span> <span class="keyword">char</span> GrayIndex = *(biData + lineBytes * (height - <span class="number">1</span> - i) / <span class="number">3</span> + j);</span><br><span class="line">        *(histData + lineBytes * (height - <span class="number">1</span> - i) / <span class="number">3</span> + j) = eqHist[GrayIndex];</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>效果如图</p>
+<img src="/2021/11/13/%E5%9B%BE%E5%83%8F%E4%BF%A1%E6%81%AF%E5%A4%84%E7%90%86%E4%BD%9C%E4%B8%9A2/hist.bmp" class="" title="This is the log image">
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>总的来说这次作业依然是十分的宁静祥和、简单质朴，不过在直方图均衡化的部分由于不太了解细节，因此借鉴了部分代码，写作风格也十分的奇妙，希望多多包含。</p>
+]]></content>
+      <tags>
+        <tag>刷题</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>她的游戏史</title>
+    <url>/2021/11/11/herstory/</url>
+    <content><![CDATA[<p>一段记录她的故事的文字，她可以是一个人，也可以是一些人。</p>
+<span id="more"></span>
+]]></content>
+      <tags>
+        <tag>游戏</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>图像信息处理Assignment2</title>
     <url>/2021/10/30/%E5%9B%BE%E5%83%8F%E4%BF%A1%E6%81%AF%E5%A4%84%E7%90%86%E4%BD%9C%E4%B8%9A/</url>
     <content><![CDATA[<p>浙大的图像信息处理，一门奇妙的课程，老师上课吹水摸鱼，网上的资源也十分不集中。故在此开设专题作为图像信息处理作业的一个分享，请善用博客搜索功能。</p>
