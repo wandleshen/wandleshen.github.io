@@ -19,6 +19,1621 @@
       </tags>
   </entry>
   <entry>
+    <title>虚拟主播数据分析</title>
+    <url>/2023/02/11/analysis/</url>
+    <content><![CDATA[<p>本文是通过 jupyter notebook 转换而来，所有的代码和数据集都可以在<a href="https://github.com/wandleshen/vup-data-analysis/">这里</a>找到。</p>
+<span id="more"></span>
+<h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>众所周知，ZJU 的计算机学院有两大势力——图形学和数据挖掘，作为一名普通的计算机专业学生，不得不品尝一下 data mining 的醍醐味。本文将以虚拟主播直播数据为例，介绍一些数据分析的基本方法，包括数据预处理、数据可视化、数据挖掘等。</p>
+<p>注意：本文包含以下要素：强行拟合、嗯套模型、选择数据、显而易见。</p>
+<h2 id="数据收集"><a href="#数据收集" class="headerlink" title="数据收集"></a>数据收集</h2><p>很明显，虚拟主播作为网络直播中的一个小小的分支，据我所知是没有一个现成的数据集可以使用的，所以我们需要自己抓取数据集。我们在这里使用 <a href="danmakus.com">danmakus</a> 的 API 来获取数据。</p>
+<p>在数据集的规模上，我们选择 50 名不同的虚拟主播，获取它们最近的 50 场直播的收入和互动数据。这样的数据集规模足够我们进行一些简单的分析，但是也不至于太大，导致分析过程过于繁琐。这 50 名虚拟主播大多来自于 VirtualReal 企划（VR 信真的是），但是也有一部分来自其他的工会或者个人。当然这样的选取谈不上科学，因为这些大部分是我自己常看的或者比较知名的主播，所以其实并不具备什么典型性。他们的名称、所属的企划或工会、用户 ID 都会被手动输入到一个 csv 文件中，以便后续的数据抓取。</p>
+<p>之后我们定义一个函数 <code>get_last_50_lives</code> 来获取最近的 50 场直播的数据， <code>get_live_detail</code> 来获得直播的详细信息，最终储存的数据将会有如下的字段：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>名称</th>
+<th>定义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>liver</code></td>
+<td>主播名称</td>
+</tr>
+<tr>
+<td><code>area</code></td>
+<td>直播分区</td>
+</tr>
+<tr>
+<td><code>danmakusCount</code></td>
+<td>弹幕数量</td>
+</tr>
+<tr>
+<td><code>startDate</code></td>
+<td>直播开始时间</td>
+</tr>
+<tr>
+<td><code>stopDate</code></td>
+<td>直播结束时间</td>
+</tr>
+<tr>
+<td><code>title</code></td>
+<td>直播标题</td>
+</tr>
+<tr>
+<td><code>totalIncome</code></td>
+<td>直播总收入</td>
+</tr>
+<tr>
+<td><code>watchCount</code></td>
+<td>直播观看人数</td>
+</tr>
+<tr>
+<td><code>interactionCount</code></td>
+<td>直播互动数量</td>
+</tr>
+<tr>
+<td><code>superchatIncome</code></td>
+<td>直播 superchat 收入</td>
+</tr>
+<tr>
+<td><code>superchatTimestampes</code></td>
+<td>直播 superchat 时间戳</td>
+</tr>
+<tr>
+<td><code>membershipIncome</code></td>
+<td>直播大航海收入</td>
+</tr>
+<tr>
+<td><code>membershipTimestampes</code></td>
+<td>直播大航海时间戳</td>
+</tr>
+</tbody>
+</table>
+</div>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment"># imports</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"><span class="keyword">import</span> pandas <span class="keyword">as</span> pd</span><br><span class="line"><span class="keyword">from</span> pandas.plotting <span class="keyword">import</span> scatter_matrix</span><br><span class="line"><span class="keyword">import</span> matplotlib.pyplot <span class="keyword">as</span> plt</span><br><span class="line"><span class="keyword">import</span> matplotlib.dates <span class="keyword">as</span> mdates</span><br><span class="line"><span class="keyword">from</span> scipy <span class="keyword">import</span> stats</span><br><span class="line"><span class="keyword">import</span> seaborn <span class="keyword">as</span> sns</span><br><span class="line"><span class="keyword">import</span> requests</span><br><span class="line"><span class="keyword">import</span> math</span><br><span class="line"><span class="keyword">from</span> time <span class="keyword">import</span> sleep</span><br><span class="line"><span class="keyword">import</span> os</span><br></pre></td></tr></table></figure>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">get_last_50_lives</span>(<span class="params"><span class="built_in">id</span></span>):</span></span><br><span class="line">    api_str = <span class="string">&#x27;https://ukamnads.icu/api/v2/channel?uId=&#123;0&#125;&#x27;</span></span><br><span class="line">    url = api_str.<span class="built_in">format</span>(<span class="built_in">id</span>)</span><br><span class="line">    lives = requests.get(url).json()[<span class="string">&#x27;data&#x27;</span>][<span class="string">&#x27;lives&#x27;</span>]</span><br><span class="line">    <span class="keyword">if</span> lives[<span class="number">0</span>][<span class="string">&#x27;isFinish&#x27;</span>]:</span><br><span class="line">        <span class="keyword">return</span> lives[:<span class="number">50</span>]</span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        <span class="keyword">return</span> lives[<span class="number">1</span>:<span class="number">51</span>]</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">get_live_detail</span>(<span class="params">live_id</span>):</span></span><br><span class="line">    api_str = <span class="string">&#x27;https://ukamnads.icu/api/v2/live?liveId=&#123;0&#125;&#x27;</span></span><br><span class="line">    url = api_str.<span class="built_in">format</span>(live_id)</span><br><span class="line">    <span class="keyword">try</span>:</span><br><span class="line">        danmakus = requests.get(url).json()[<span class="string">&#x27;data&#x27;</span>][<span class="string">&#x27;data&#x27;</span>][<span class="string">&#x27;danmakus&#x27;</span>]</span><br><span class="line">    <span class="keyword">except</span> Exception <span class="keyword">as</span> e:</span><br><span class="line">        <span class="built_in">print</span>(e)</span><br><span class="line">        <span class="keyword">return</span> []</span><br><span class="line">    superchatCount = <span class="number">0</span></span><br><span class="line">    superchatIncome = <span class="number">0</span></span><br><span class="line">    superchatTimestampes = []</span><br><span class="line">    membershipCount = <span class="number">0</span></span><br><span class="line">    membershipIncome = <span class="number">0</span></span><br><span class="line">    membershipTimestampes = []</span><br><span class="line">    <span class="keyword">for</span> danmaku <span class="keyword">in</span> danmakus:</span><br><span class="line">        <span class="keyword">if</span> danmaku[<span class="string">&#x27;type&#x27;</span>] == <span class="number">3</span>:</span><br><span class="line">            superchatCount += <span class="number">1</span></span><br><span class="line">            superchatIncome += danmaku[<span class="string">&#x27;price&#x27;</span>]</span><br><span class="line">            superchatTimestampes.append(danmaku[<span class="string">&#x27;sendDate&#x27;</span>])</span><br><span class="line">        <span class="keyword">elif</span> danmaku[<span class="string">&#x27;type&#x27;</span>] == <span class="number">2</span>:</span><br><span class="line">            membershipCount += <span class="number">1</span></span><br><span class="line">            membershipIncome += danmaku[<span class="string">&#x27;price&#x27;</span>]</span><br><span class="line">            membershipTimestampes.append(danmaku[<span class="string">&#x27;sendDate&#x27;</span>])</span><br><span class="line">    <span class="keyword">return</span> [superchatCount, superchatIncome, superchatTimestampes, membershipCount, membershipIncome, membershipTimestampes]</span><br><span class="line"></span><br><span class="line"><span class="comment"># get_last_50_lives(434401868)[0]</span></span><br><span class="line"><span class="comment"># get_live_detail(&#x27;63013fb9-a8e3-46b0-bd34-a479ad8c4858&#x27;)</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment"># dataframe will be like this</span></span><br><span class="line"><span class="comment"># | liver | area | danmakusCount | startDate | stopDate | timeDuration | title | totalIncome | watchCount </span></span><br><span class="line"><span class="comment"># | interactionCount | superchatCount | superchatIncome | superchatTimestamps | membershipCount | membershipIncome | membershipTimestamps |</span></span><br><span class="line"></span><br><span class="line">c_names = pd.read_csv(<span class="string">&#x27;vtb.csv&#x27;</span>, names=[<span class="string">&#x27;name&#x27;</span>, <span class="string">&#x27;affiliation&#x27;</span>, <span class="string">&#x27;id&#x27;</span>])</span><br><span class="line">df = pd.DataFrame(columns=[<span class="string">&#x27;liver&#x27;</span>, <span class="string">&#x27;area&#x27;</span>, <span class="string">&#x27;danmakusCount&#x27;</span>, <span class="string">&#x27;startDate&#x27;</span>, <span class="string">&#x27;stopDate&#x27;</span>, <span class="string">&#x27;timeDuration&#x27;</span>, </span><br><span class="line">                            <span class="string">&#x27;title&#x27;</span>, <span class="string">&#x27;totalIncome&#x27;</span>, <span class="string">&#x27;watchCount&#x27;</span>, <span class="string">&#x27;interactionCount&#x27;</span>, <span class="string">&#x27;superchatCount&#x27;</span>, </span><br><span class="line">                            <span class="string">&#x27;superchatIncome&#x27;</span>, <span class="string">&#x27;superchatTimestamps&#x27;</span>, <span class="string">&#x27;membershipCount&#x27;</span>, <span class="string">&#x27;membershipIncome&#x27;</span>, <span class="string">&#x27;membershipTimestamps&#x27;</span>])</span><br><span class="line"></span><br><span class="line">c_names.head()</span><br></pre></td></tr></table></figure>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>name</th>
+      <th>affiliation</th>
+      <th>id</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>七海Nana7mi</td>
+      <td>vr</td>
+      <td>434334701</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>中单光一</td>
+      <td>vr</td>
+      <td>434401868</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>内德维德</td>
+      <td>independent</td>
+      <td>90873</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>弥希Miki</td>
+      <td>vr</td>
+      <td>477317922</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>星弥Hoshimi</td>
+      <td>vr</td>
+      <td>477342747</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+
+
+
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">for</span> index, row <span class="keyword">in</span> c_names.iterrows():</span><br><span class="line">    lives = get_last_50_lives(<span class="built_in">int</span>(row[<span class="string">&#x27;id&#x27;</span>]))</span><br><span class="line">    sleep(<span class="number">0.5</span>)</span><br><span class="line">    <span class="keyword">for</span> live <span class="keyword">in</span> lives:</span><br><span class="line">        live_detail = get_live_detail(live[<span class="string">&#x27;liveId&#x27;</span>])</span><br><span class="line">        <span class="keyword">try</span>:</span><br><span class="line">            df = df.append(&#123;</span><br><span class="line">                <span class="string">&#x27;liver&#x27;</span>: row[<span class="string">&#x27;name&#x27;</span>],</span><br><span class="line">                <span class="string">&#x27;area&#x27;</span>: live[<span class="string">&#x27;area&#x27;</span>],</span><br><span class="line">                <span class="string">&#x27;danmakusCount&#x27;</span>: live[<span class="string">&#x27;danmakusCount&#x27;</span>],</span><br><span class="line">                <span class="string">&#x27;startDate&#x27;</span>: live[<span class="string">&#x27;startDate&#x27;</span>],</span><br><span class="line">                <span class="string">&#x27;stopDate&#x27;</span>: live[<span class="string">&#x27;stopDate&#x27;</span>],</span><br><span class="line">                <span class="string">&#x27;timeDuration&#x27;</span>: live[<span class="string">&#x27;stopDate&#x27;</span>]-live[<span class="string">&#x27;startDate&#x27;</span>],</span><br><span class="line">                <span class="string">&#x27;title&#x27;</span>: live[<span class="string">&#x27;title&#x27;</span>],</span><br><span class="line">                <span class="string">&#x27;totalIncome&#x27;</span>: live[<span class="string">&#x27;totalIncome&#x27;</span>],</span><br><span class="line">                <span class="string">&#x27;watchCount&#x27;</span>: live[<span class="string">&#x27;watchCount&#x27;</span>],</span><br><span class="line">                <span class="string">&#x27;interactionCount&#x27;</span>: live[<span class="string">&#x27;interactionCount&#x27;</span>],</span><br><span class="line">                <span class="string">&#x27;superchatCount&#x27;</span>: live_detail[<span class="number">0</span>],</span><br><span class="line">                <span class="string">&#x27;superchatIncome&#x27;</span>: live_detail[<span class="number">1</span>],</span><br><span class="line">                <span class="string">&#x27;superchatTimestamps&#x27;</span>: live_detail[<span class="number">2</span>],</span><br><span class="line">                <span class="string">&#x27;membershipCount&#x27;</span>: live_detail[<span class="number">3</span>],</span><br><span class="line">                <span class="string">&#x27;membershipIncome&#x27;</span>: live_detail[<span class="number">4</span>],</span><br><span class="line">                <span class="string">&#x27;membershipTimestamps&#x27;</span>: live_detail[<span class="number">5</span>]</span><br><span class="line">            &#125;, ignore_index=<span class="literal">True</span>)</span><br><span class="line">        <span class="keyword">except</span> Exception <span class="keyword">as</span> e:</span><br><span class="line">            <span class="built_in">print</span>(e)</span><br><span class="line">            <span class="keyword">continue</span></span><br><span class="line">        sleep(<span class="number">0.5</span>)</span><br><span class="line">    <span class="built_in">print</span>(row[<span class="string">&#x27;name&#x27;</span>] + <span class="string">&#x27;Done&#x27;</span>)</span><br><span class="line">df.to_hdf(<span class="string">&#x27;data.h5&#x27;</span>, key=<span class="string">&#x27;df&#x27;</span>, mode=<span class="string">&#x27;w&#x27;</span>)</span><br></pre></td></tr></table></figure>
+<p>以上代码我略作修改之后扔服务器里跑了，为了“分布式”我将各个主播的数据拆分开储存，如果你也想要这个数据集，可以在<a href="https://github.com/wandleshen/vup-data-analysis/">这里</a>下载。</p>
+<h3 id="经过漫长的等待"><a href="#经过漫长的等待" class="headerlink" title="经过漫长的等待"></a>经过漫长的等待</h3><p>我们得到的数据集是以有由 50 个 hdf 文件组成的文件夹的形式存在的，每个 hdf 文件都是一个主播的最近 50 场直播的数据。我们需要将这些数据整合到一个文件中，以便后续的分析。这里我们使用 <code>pandas</code> 来处理数据。</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">for</span> _, _, files <span class="keyword">in</span> os.walk(<span class="string">&#x27;./h5s&#x27;</span>):</span><br><span class="line">    <span class="keyword">for</span> file <span class="keyword">in</span> files:</span><br><span class="line">        <span class="keyword">if</span> file.endswith(<span class="string">&#x27;.h5&#x27;</span>):</span><br><span class="line">            joined = pd.read_hdf(<span class="string">&#x27;./h5s/&#x27;</span> + file)</span><br><span class="line">            df = pd.concat([df, joined], ignore_index=<span class="literal">True</span>)</span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span>(df.shape)</span><br><span class="line">df.head()</span><br></pre></td></tr></table></figure>
+<pre><code>(2477, 16)
+</code></pre><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>liver</th>
+      <th>area</th>
+      <th>danmakusCount</th>
+      <th>startDate</th>
+      <th>stopDate</th>
+      <th>timeDuration</th>
+      <th>title</th>
+      <th>totalIncome</th>
+      <th>watchCount</th>
+      <th>interactionCount</th>
+      <th>superchatCount</th>
+      <th>superchatIncome</th>
+      <th>superchatTimestamps</th>
+      <th>membershipCount</th>
+      <th>membershipIncome</th>
+      <th>membershipTimestamps</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>-阿蕊娅Aria-</td>
+      <td>虚拟Singer</td>
+      <td>2627</td>
+      <td>1675951004000</td>
+      <td>1675962058514</td>
+      <td>11054514</td>
+      <td>下面我来简单唱两句</td>
+      <td>1754.0</td>
+      <td>4078</td>
+      <td>468</td>
+      <td>16</td>
+      <td>680</td>
+      <td>[1675954450657, 1675955951334, 1675957817542, ...</td>
+      <td>0</td>
+      <td>0</td>
+      <td>[]</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>-阿蕊娅Aria-</td>
+      <td>虚拟Singer</td>
+      <td>3762</td>
+      <td>1675864738000</td>
+      <td>1675876582848</td>
+      <td>11844848</td>
+      <td>赫赫，我来简单唱两句</td>
+      <td>11057.0</td>
+      <td>4928</td>
+      <td>649</td>
+      <td>12</td>
+      <td>597</td>
+      <td>[1675864937946, 1675865846334, 1675866462953, ...</td>
+      <td>11</td>
+      <td>7358</td>
+      <td>[1675868606293, 1675868631905, 1675869343361, ...</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>-阿蕊娅Aria-</td>
+      <td>虚拟主播</td>
+      <td>2167</td>
+      <td>1675727764000</td>
+      <td>1675736225954</td>
+      <td>8461954</td>
+      <td>早上好！唱一会儿~</td>
+      <td>3852.0</td>
+      <td>3382</td>
+      <td>451</td>
+      <td>7</td>
+      <td>230</td>
+      <td>[1675728302746, 1675729527578, 1675730123898, ...</td>
+      <td>9</td>
+      <td>1242</td>
+      <td>[1675727902618, 1675728119437, 1675728413698, ...</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>-阿蕊娅Aria-</td>
+      <td>虚拟主播</td>
+      <td>4039</td>
+      <td>1675605329000</td>
+      <td>1675620251527</td>
+      <td>14922527</td>
+      <td>歌杂~</td>
+      <td>8225.0</td>
+      <td>4455</td>
+      <td>575</td>
+      <td>19</td>
+      <td>3276</td>
+      <td>[1675605761897, 1675606540268, 1675606864640, ...</td>
+      <td>6</td>
+      <td>2688</td>
+      <td>[1675608154614, 1675609365272, 1675609368458, ...</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>-阿蕊娅Aria-</td>
+      <td>虚拟主播</td>
+      <td>1393</td>
+      <td>1675518765000</td>
+      <td>1675565646886</td>
+      <td>46881886</td>
+      <td>LOL内战之赢一把就睡</td>
+      <td>666.0</td>
+      <td>5452</td>
+      <td>355</td>
+      <td>3</td>
+      <td>90</td>
+      <td>[1675522508393, 1675522632583, 1675526359959]</td>
+      <td>3</td>
+      <td>414</td>
+      <td>[1675525369538, 1675526556414, 1675531104266]</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+
+
+<p>其实看到这里我就有点后悔了，叔叔给虚拟主播区分二级区域只是最近的事情，几个主播的分区不是虚拟主播区就是电台区，根本没有任何分析的必要。</p>
+<p>然后我感觉或许应该增加一个有关粉丝数量的字段，毕竟大 v 和小 v 的恰米数量是不一样的，不过 later better than never 。这里我们用到了 <a href="https://www.bilibili.com/">Bilibili</a> 的 API ，根据局部性原理，我们可以不用调用 2500 次 API 。</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">API_STR = <span class="string">&#x27;https://api.bilibili.com/x/web-interface/card?mid=&#123;0&#125;&#x27;</span></span><br><span class="line">mid = <span class="number">0</span></span><br><span class="line">all_followers = []</span><br><span class="line"><span class="keyword">for</span> _, row <span class="keyword">in</span> df.iterrows():</span><br><span class="line">    <span class="keyword">if</span> mid != c_names[c_names[<span class="string">&#x27;name&#x27;</span>] == row[<span class="string">&#x27;liver&#x27;</span>]][<span class="string">&#x27;id&#x27;</span>].values[<span class="number">0</span>]:</span><br><span class="line">        mid = c_names[c_names[<span class="string">&#x27;name&#x27;</span>] == row[<span class="string">&#x27;liver&#x27;</span>]][<span class="string">&#x27;id&#x27;</span>].values[<span class="number">0</span>]</span><br><span class="line">        url = API_STR.<span class="built_in">format</span>(mid)</span><br><span class="line">        followers = requests.get(url).json()[<span class="string">&#x27;data&#x27;</span>][<span class="string">&#x27;follower&#x27;</span>]</span><br><span class="line">        sleep(<span class="number">1</span>)</span><br><span class="line">    all_followers.append(followers)</span><br><span class="line"></span><br><span class="line">df[<span class="string">&#x27;followers&#x27;</span>] = all_followers</span><br><span class="line">df.to_hdf(<span class="string">&#x27;data.h5&#x27;</span>, key=<span class="string">&#x27;df&#x27;</span>, mode=<span class="string">&#x27;w&#x27;</span>)</span><br><span class="line">df.head()</span><br></pre></td></tr></table></figure>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>liver</th>
+      <th>area</th>
+      <th>danmakusCount</th>
+      <th>startDate</th>
+      <th>stopDate</th>
+      <th>timeDuration</th>
+      <th>title</th>
+      <th>totalIncome</th>
+      <th>watchCount</th>
+      <th>interactionCount</th>
+      <th>superchatCount</th>
+      <th>superchatIncome</th>
+      <th>superchatTimestamps</th>
+      <th>membershipCount</th>
+      <th>membershipIncome</th>
+      <th>membershipTimestamps</th>
+      <th>followers</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>-阿蕊娅Aria-</td>
+      <td>虚拟Singer</td>
+      <td>2627</td>
+      <td>1675951004000</td>
+      <td>1675962058514</td>
+      <td>11054514</td>
+      <td>下面我来简单唱两句</td>
+      <td>1754.0</td>
+      <td>4078</td>
+      <td>468</td>
+      <td>16</td>
+      <td>680</td>
+      <td>[1675954450657, 1675955951334, 1675957817542, ...</td>
+      <td>0</td>
+      <td>0</td>
+      <td>[]</td>
+      <td>34583</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>-阿蕊娅Aria-</td>
+      <td>虚拟Singer</td>
+      <td>3762</td>
+      <td>1675864738000</td>
+      <td>1675876582848</td>
+      <td>11844848</td>
+      <td>赫赫，我来简单唱两句</td>
+      <td>11057.0</td>
+      <td>4928</td>
+      <td>649</td>
+      <td>12</td>
+      <td>597</td>
+      <td>[1675864937946, 1675865846334, 1675866462953, ...</td>
+      <td>11</td>
+      <td>7358</td>
+      <td>[1675868606293, 1675868631905, 1675869343361, ...</td>
+      <td>34583</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>-阿蕊娅Aria-</td>
+      <td>虚拟主播</td>
+      <td>2167</td>
+      <td>1675727764000</td>
+      <td>1675736225954</td>
+      <td>8461954</td>
+      <td>早上好！唱一会儿~</td>
+      <td>3852.0</td>
+      <td>3382</td>
+      <td>451</td>
+      <td>7</td>
+      <td>230</td>
+      <td>[1675728302746, 1675729527578, 1675730123898, ...</td>
+      <td>9</td>
+      <td>1242</td>
+      <td>[1675727902618, 1675728119437, 1675728413698, ...</td>
+      <td>34583</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>-阿蕊娅Aria-</td>
+      <td>虚拟主播</td>
+      <td>4039</td>
+      <td>1675605329000</td>
+      <td>1675620251527</td>
+      <td>14922527</td>
+      <td>歌杂~</td>
+      <td>8225.0</td>
+      <td>4455</td>
+      <td>575</td>
+      <td>19</td>
+      <td>3276</td>
+      <td>[1675605761897, 1675606540268, 1675606864640, ...</td>
+      <td>6</td>
+      <td>2688</td>
+      <td>[1675608154614, 1675609365272, 1675609368458, ...</td>
+      <td>34583</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>-阿蕊娅Aria-</td>
+      <td>虚拟主播</td>
+      <td>1393</td>
+      <td>1675518765000</td>
+      <td>1675565646886</td>
+      <td>46881886</td>
+      <td>LOL内战之赢一把就睡</td>
+      <td>666.0</td>
+      <td>5452</td>
+      <td>355</td>
+      <td>3</td>
+      <td>90</td>
+      <td>[1675522508393, 1675522632583, 1675526359959]</td>
+      <td>3</td>
+      <td>414</td>
+      <td>[1675525369538, 1675526556414, 1675531104266]</td>
+      <td>34583</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+
+
+<p>至此，我们获得了一个数据集，然后就是数据的预处理了。</p>
+<h2 id="数据预处理"><a href="#数据预处理" class="headerlink" title="数据预处理"></a>数据预处理</h2><p>首先我们先来看看每个字段的类型。</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">df = pd.read_hdf(<span class="string">&#x27;data.h5&#x27;</span>)</span><br><span class="line">df.info()</span><br></pre></td></tr></table></figure>
+<pre><code>&lt;class &#39;pandas.core.frame.DataFrame&#39;&gt;
+Int64Index: 2477 entries, 0 to 2476
+Data columns (total 17 columns):
+ #   Column                Non-Null Count  Dtype 
+---  ------                --------------  ----- 
+ 0   liver                 2477 non-null   object
+ 1   area                  2477 non-null   object
+ 2   danmakusCount         2477 non-null   object
+ 3   startDate             2477 non-null   object
+ 4   stopDate              2477 non-null   object
+ 5   timeDuration          2477 non-null   object
+ 6   title                 2477 non-null   object
+ 7   totalIncome           2477 non-null   object
+ 8   watchCount            2477 non-null   object
+ 9   interactionCount      2477 non-null   object
+ 10  superchatCount        2477 non-null   object
+ 11  superchatIncome       2477 non-null   object
+ 12  superchatTimestamps   2477 non-null   object
+ 13  membershipCount       2477 non-null   object
+ 14  membershipIncome      2477 non-null   object
+ 15  membershipTimestamps  2477 non-null   object
+ 16  followers             2477 non-null   int64 
+dtypes: int64(1), object(16)
+memory usage: 348.3+ KB
+</code></pre><p>好家伙，全是 object ，很明显不能拿来进行相关性的分析，所以我们在这里要做的就是将部分字段转换成数值型的数据。而对于时间相关的字段，我们要将其转换为 <code>datetime</code> 类型。</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 部分字段转换为数值类型</span></span><br><span class="line"><span class="comment"># df[&#x27;danmakusCount&#x27;] = pd.to_numeric(df[&#x27;danmakusCount&#x27;])</span></span><br><span class="line">df[<span class="string">&#x27;timeDuration&#x27;</span>] = pd.to_numeric(df[<span class="string">&#x27;timeDuration&#x27;</span>])</span><br><span class="line"><span class="comment"># df[&#x27;totalIncome&#x27;] = pd.to_numeric(df[&#x27;totalIncome&#x27;])</span></span><br><span class="line">df[<span class="string">&#x27;watchCount&#x27;</span>] = pd.to_numeric(df[<span class="string">&#x27;watchCount&#x27;</span>])</span><br><span class="line">df[<span class="string">&#x27;interactionCount&#x27;</span>] = pd.to_numeric(df[<span class="string">&#x27;interactionCount&#x27;</span>])</span><br><span class="line">df[<span class="string">&#x27;superchatCount&#x27;</span>] = pd.to_numeric(df[<span class="string">&#x27;superchatCount&#x27;</span>])</span><br><span class="line">df[<span class="string">&#x27;superchatIncome&#x27;</span>] = pd.to_numeric(df[<span class="string">&#x27;superchatIncome&#x27;</span>])</span><br><span class="line">df[<span class="string">&#x27;membershipCount&#x27;</span>] = pd.to_numeric(df[<span class="string">&#x27;membershipCount&#x27;</span>])</span><br><span class="line">df[<span class="string">&#x27;membershipIncome&#x27;</span>] = pd.to_numeric(df[<span class="string">&#x27;membershipIncome&#x27;</span>])</span><br><span class="line"></span><br><span class="line"><span class="comment"># 时间戳 -&gt; datetime</span></span><br><span class="line">df[<span class="string">&#x27;startDate&#x27;</span>] = pd.to_datetime(df[<span class="string">&#x27;startDate&#x27;</span>], unit=<span class="string">&#x27;ms&#x27;</span>)</span><br><span class="line">df[<span class="string">&#x27;stopDate&#x27;</span>] = pd.to_datetime(df[<span class="string">&#x27;stopDate&#x27;</span>], unit=<span class="string">&#x27;ms&#x27;</span>)</span><br><span class="line">df[<span class="string">&#x27;superchatTimestamps&#x27;</span>] = df[<span class="string">&#x27;superchatTimestamps&#x27;</span>].apply(<span class="keyword">lambda</span> x: [pd.to_datetime(i, unit=<span class="string">&#x27;ms&#x27;</span>) <span class="keyword">for</span> i <span class="keyword">in</span> x])</span><br><span class="line">df[<span class="string">&#x27;membershipTimestamps&#x27;</span>] = df[<span class="string">&#x27;membershipTimestamps&#x27;</span>].apply(<span class="keyword">lambda</span> x: [pd.to_datetime(i, unit=<span class="string">&#x27;ms&#x27;</span>) <span class="keyword">for</span> i <span class="keyword">in</span> x])</span><br><span class="line"></span><br><span class="line">df.head()</span><br></pre></td></tr></table></figure>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>liver</th>
+      <th>area</th>
+      <th>danmakusCount</th>
+      <th>startDate</th>
+      <th>stopDate</th>
+      <th>timeDuration</th>
+      <th>title</th>
+      <th>totalIncome</th>
+      <th>watchCount</th>
+      <th>interactionCount</th>
+      <th>superchatCount</th>
+      <th>superchatIncome</th>
+      <th>superchatTimestamps</th>
+      <th>membershipCount</th>
+      <th>membershipIncome</th>
+      <th>membershipTimestamps</th>
+      <th>followers</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>-阿蕊娅Aria-</td>
+      <td>虚拟Singer</td>
+      <td>2627</td>
+      <td>2023-02-09 13:56:44</td>
+      <td>2023-02-09 17:00:58.514</td>
+      <td>11054514</td>
+      <td>下面我来简单唱两句</td>
+      <td>1754.0</td>
+      <td>4078</td>
+      <td>468</td>
+      <td>16</td>
+      <td>680</td>
+      <td>[2023-02-09 14:54:10.657000, 2023-02-09 15:19:...</td>
+      <td>0</td>
+      <td>0</td>
+      <td>[]</td>
+      <td>34583</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>-阿蕊娅Aria-</td>
+      <td>虚拟Singer</td>
+      <td>3762</td>
+      <td>2023-02-08 13:58:58</td>
+      <td>2023-02-08 17:16:22.848</td>
+      <td>11844848</td>
+      <td>赫赫，我来简单唱两句</td>
+      <td>11057.0</td>
+      <td>4928</td>
+      <td>649</td>
+      <td>12</td>
+      <td>597</td>
+      <td>[2023-02-08 14:02:17.946000, 2023-02-08 14:17:...</td>
+      <td>11</td>
+      <td>7358</td>
+      <td>[2023-02-08 15:03:26.293000, 2023-02-08 15:03:...</td>
+      <td>34583</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>-阿蕊娅Aria-</td>
+      <td>虚拟主播</td>
+      <td>2167</td>
+      <td>2023-02-06 23:56:04</td>
+      <td>2023-02-07 02:17:05.954</td>
+      <td>8461954</td>
+      <td>早上好！唱一会儿~</td>
+      <td>3852.0</td>
+      <td>3382</td>
+      <td>451</td>
+      <td>7</td>
+      <td>230</td>
+      <td>[2023-02-07 00:05:02.746000, 2023-02-07 00:25:...</td>
+      <td>9</td>
+      <td>1242</td>
+      <td>[2023-02-06 23:58:22.618000, 2023-02-07 00:01:...</td>
+      <td>34583</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>-阿蕊娅Aria-</td>
+      <td>虚拟主播</td>
+      <td>4039</td>
+      <td>2023-02-05 13:55:29</td>
+      <td>2023-02-05 18:04:11.527</td>
+      <td>14922527</td>
+      <td>歌杂~</td>
+      <td>8225.0</td>
+      <td>4455</td>
+      <td>575</td>
+      <td>19</td>
+      <td>3276</td>
+      <td>[2023-02-05 14:02:41.897000, 2023-02-05 14:15:...</td>
+      <td>6</td>
+      <td>2688</td>
+      <td>[2023-02-05 14:42:34.614000, 2023-02-05 15:02:...</td>
+      <td>34583</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>-阿蕊娅Aria-</td>
+      <td>虚拟主播</td>
+      <td>1393</td>
+      <td>2023-02-04 13:52:45</td>
+      <td>2023-02-05 02:54:06.886</td>
+      <td>46881886</td>
+      <td>LOL内战之赢一把就睡</td>
+      <td>666.0</td>
+      <td>5452</td>
+      <td>355</td>
+      <td>3</td>
+      <td>90</td>
+      <td>[2023-02-04 14:55:08.393000, 2023-02-04 14:57:...</td>
+      <td>3</td>
+      <td>414</td>
+      <td>[2023-02-04 15:42:49.538000, 2023-02-04 16:02:...</td>
+      <td>34583</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+
+
+<p>当然，我们还可以再增加一些用于比较的数据，例如平均的 sc 和舰长的金额、开始与结束的时间点等等。</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">df[<span class="string">&#x27;avgSuperchatIncome&#x27;</span>] = df[<span class="string">&#x27;superchatIncome&#x27;</span>] / df[<span class="string">&#x27;superchatCount&#x27;</span>]</span><br><span class="line">df[<span class="string">&#x27;avgMembershipIncome&#x27;</span>] = df[<span class="string">&#x27;membershipIncome&#x27;</span>] / df[<span class="string">&#x27;membershipCount&#x27;</span>]</span><br><span class="line">df[<span class="string">&#x27;startHour&#x27;</span>] = df[<span class="string">&#x27;startDate&#x27;</span>].apply(<span class="keyword">lambda</span> x: (x.hour + <span class="number">8</span>) % <span class="number">24</span>)</span><br><span class="line">df[<span class="string">&#x27;stopHour&#x27;</span>] = df[<span class="string">&#x27;stopDate&#x27;</span>].apply(<span class="keyword">lambda</span> x: (x.hour + <span class="number">8</span>) % <span class="number">24</span>)</span><br><span class="line"></span><br><span class="line">df.head()</span><br></pre></td></tr></table></figure>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>liver</th>
+      <th>area</th>
+      <th>danmakusCount</th>
+      <th>startDate</th>
+      <th>stopDate</th>
+      <th>timeDuration</th>
+      <th>title</th>
+      <th>totalIncome</th>
+      <th>watchCount</th>
+      <th>interactionCount</th>
+      <th>...</th>
+      <th>superchatIncome</th>
+      <th>superchatTimestamps</th>
+      <th>membershipCount</th>
+      <th>membershipIncome</th>
+      <th>membershipTimestamps</th>
+      <th>followers</th>
+      <th>avgSuperchatIncome</th>
+      <th>avgMembershipIncome</th>
+      <th>startHour</th>
+      <th>stopHour</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>-阿蕊娅Aria-</td>
+      <td>虚拟Singer</td>
+      <td>2627</td>
+      <td>2023-02-09 13:56:44</td>
+      <td>2023-02-09 17:00:58.514</td>
+      <td>11054514</td>
+      <td>下面我来简单唱两句</td>
+      <td>1754.0</td>
+      <td>4078</td>
+      <td>468</td>
+      <td>...</td>
+      <td>680</td>
+      <td>[2023-02-09 14:54:10.657000, 2023-02-09 15:19:...</td>
+      <td>0</td>
+      <td>0</td>
+      <td>[]</td>
+      <td>34583</td>
+      <td>42.500000</td>
+      <td>NaN</td>
+      <td>21</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>-阿蕊娅Aria-</td>
+      <td>虚拟Singer</td>
+      <td>3762</td>
+      <td>2023-02-08 13:58:58</td>
+      <td>2023-02-08 17:16:22.848</td>
+      <td>11844848</td>
+      <td>赫赫，我来简单唱两句</td>
+      <td>11057.0</td>
+      <td>4928</td>
+      <td>649</td>
+      <td>...</td>
+      <td>597</td>
+      <td>[2023-02-08 14:02:17.946000, 2023-02-08 14:17:...</td>
+      <td>11</td>
+      <td>7358</td>
+      <td>[2023-02-08 15:03:26.293000, 2023-02-08 15:03:...</td>
+      <td>34583</td>
+      <td>49.750000</td>
+      <td>668.909091</td>
+      <td>21</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>-阿蕊娅Aria-</td>
+      <td>虚拟主播</td>
+      <td>2167</td>
+      <td>2023-02-06 23:56:04</td>
+      <td>2023-02-07 02:17:05.954</td>
+      <td>8461954</td>
+      <td>早上好！唱一会儿~</td>
+      <td>3852.0</td>
+      <td>3382</td>
+      <td>451</td>
+      <td>...</td>
+      <td>230</td>
+      <td>[2023-02-07 00:05:02.746000, 2023-02-07 00:25:...</td>
+      <td>9</td>
+      <td>1242</td>
+      <td>[2023-02-06 23:58:22.618000, 2023-02-07 00:01:...</td>
+      <td>34583</td>
+      <td>32.857143</td>
+      <td>138.000000</td>
+      <td>7</td>
+      <td>10</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>-阿蕊娅Aria-</td>
+      <td>虚拟主播</td>
+      <td>4039</td>
+      <td>2023-02-05 13:55:29</td>
+      <td>2023-02-05 18:04:11.527</td>
+      <td>14922527</td>
+      <td>歌杂~</td>
+      <td>8225.0</td>
+      <td>4455</td>
+      <td>575</td>
+      <td>...</td>
+      <td>3276</td>
+      <td>[2023-02-05 14:02:41.897000, 2023-02-05 14:15:...</td>
+      <td>6</td>
+      <td>2688</td>
+      <td>[2023-02-05 14:42:34.614000, 2023-02-05 15:02:...</td>
+      <td>34583</td>
+      <td>172.421053</td>
+      <td>448.000000</td>
+      <td>21</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>-阿蕊娅Aria-</td>
+      <td>虚拟主播</td>
+      <td>1393</td>
+      <td>2023-02-04 13:52:45</td>
+      <td>2023-02-05 02:54:06.886</td>
+      <td>46881886</td>
+      <td>LOL内战之赢一把就睡</td>
+      <td>666.0</td>
+      <td>5452</td>
+      <td>355</td>
+      <td>...</td>
+      <td>90</td>
+      <td>[2023-02-04 14:55:08.393000, 2023-02-04 14:57:...</td>
+      <td>3</td>
+      <td>414</td>
+      <td>[2023-02-04 15:42:49.538000, 2023-02-04 16:02:...</td>
+      <td>34583</td>
+      <td>30.000000</td>
+      <td>138.000000</td>
+      <td>21</td>
+      <td>10</td>
+    </tr>
+  </tbody>
+</table>
+<p>5 rows × 21 columns</p>
+</div>
+
+
+
+<h2 id="数据分析与可视化"><a href="#数据分析与可视化" class="headerlink" title="数据分析与可视化"></a>数据分析与可视化</h2><p>久等了，终于到了数据可视化的环节了。这里我们使用 <code>matplotlib</code> 来进行数据可视化。</p>
+<p>我们需要通过此来验证一下我们能否通过一些数据来预测或者判断主播的 sc 收入/大航海收入/总收入。整点概率论的内容，我们有一个原假设：</p>
+<script type="math/tex; mode=display">
+H_0: 主播的 sc 收入/大航海收入/总收入与我们收集到的数据（观看人数/互动数量/弹幕数量等等）无关</script><p>与之相对的是备择假设：</p>
+<script type="math/tex; mode=display">
+H_1: 主播的 sc 收入/大航海收入/总收入与我们收集到的数据（观看人数/互动数量/弹幕数量等等）有关</script><p>这里的显著水准 $\alpha=0.05$ 。</p>
+<p>首先，我们可以使用相关性矩阵来判断我们的 dataframe 中的字段之间是否有相关性。我们使用 Pearson 相关系数来计算相关性。</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">plt.figure(figsize=(<span class="number">10</span>, <span class="number">10</span>))</span><br><span class="line">sns.heatmap(df.corr(), annot=<span class="literal">True</span>, fmt=<span class="string">&#x27;.2f&#x27;</span>, cmap=<span class="string">&#x27;Blues&#x27;</span>)</span><br><span class="line">plt.show()</span><br></pre></td></tr></table></figure>
+<img src="/2023/02/11/analysis/data-analysis-tutorial_17_0.png" class="">
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">axes = scatter_matrix(df, figsize=(<span class="number">22</span>, <span class="number">18</span>))</span><br><span class="line"><span class="keyword">for</span> ax <span class="keyword">in</span> axes.flatten():</span><br><span class="line">    ax.yaxis.label.set_rotation(<span class="number">60</span>)</span><br><span class="line">    ax.yaxis.label.set_ha(<span class="string">&#x27;right&#x27;</span>)</span><br><span class="line">plt.tight_layout()</span><br><span class="line">plt.show()</span><br></pre></td></tr></table></figure>
+<img src="/2023/02/11/analysis/data-analysis-tutorial_18_0.png" class="">
+<p>好了，数据拿到了，可以开始吹了。我在这里放弃了总收入和弹幕数量的比较，因为它们显然可以通过 sc /舰长收入和互动人数来推演得到。首先比较惊讶的一点是，相关性矩阵的数值居然基本都是正数，这说明这组数据基本上都是正相关的，可能这就是所谓的赢者通吃罢。可以注意到的是直播时长和收入没啥关系，反而是和互动人数/观看人数/下播时间相关性更高。然后观看人数和互动人数/粉丝数量的相关性也很高，这也是符合常理的。</p>
+<p>在 sc 数量/舰长数量和 sc 收入/舰长收入的比较中，我们可以看到 sc 数量/舰长数量和 sc 收入/舰长收入的相关性都很高，而舰长上的数据相关性更好，可能是由于 sc 的金额选择更加自由，而一般人只会上 138/198 元的舰长造成的。还有就是下播时间和其他数据基本都是负相关，这大概是由于我们采用了东八区修正导致而主播更加倾向于凌晨下播。</p>
+<p>总而言之，在这一节我们得到了一些显而易见的结论，也没有提出什么新的设想，所以我们在之后会讨论一些别的方向。</p>
+<h3 id="时间和sc-舰长数量的关系"><a href="#时间和sc-舰长数量的关系" class="headerlink" title="时间和sc/舰长数量的关系"></a>时间和sc/舰长数量的关系</h3><p>尽管在上面的章节中我们并没有发现开播和下播时间和 sc/舰长数量的关系，但是我仍然相信他们之间存在一定的联系。因为很显然，sc 和舰长的数量增长是会需要一个特定的时间段的，例如一场 2 小时的直播，其 sc 和舰长的数量不可能是平均增长的，所以我们需要一个更加细致的时间刻度来分析这些数据。</p>
+<p>不过可惜的是，我们并没有收集每一个 sc 和舰长的单价，不过我也懒得再花一天时间去重爬这些数据了。总而言之，大部分的 sc 的价格为 30 元或者 50 元人民币，而舰长的价格为 138 元或者 198 元人民币。在极少情况下会出现大额的红色 sc 以及价值 1998 元的提督和价值 19998 元的总督。当然如果我们得到了有趣的结论，或许在未来会进一步分析价格和时间之间的关系。</p>
+<p>由于在 bilibili 观看虚拟主播的观众大部分位于 UTC+8 的时区，其作息也和时区相符，所以我们在这里将 UTC 的时间戳转换为 UTC+8 的时间戳。</p>
+<p><strong>注意</strong>：下方图中的折线代表该时间段正在直播的主播数量，柱状图表示在这一个小时内 sc/舰长 的数量。</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> datetime <span class="keyword">import</span> time, date, timedelta, datetime</span><br><span class="line"></span><br><span class="line">datetimes = &#123;&#125;</span><br><span class="line">scs = &#123;&#125;</span><br><span class="line">mbs = &#123;&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> _, row <span class="keyword">in</span> df.iterrows():</span><br><span class="line">    ct = row[<span class="string">&#x27;startDate&#x27;</span>]</span><br><span class="line">    <span class="keyword">while</span> ct &lt;= row[<span class="string">&#x27;stopDate&#x27;</span>]:</span><br><span class="line">        t = datetime.combine(date(<span class="number">2000</span>, <span class="number">1</span>, <span class="number">1</span>),</span><br><span class="line">                             ct.replace(second=<span class="number">0</span>, microsecond=<span class="number">0</span>).time())</span><br><span class="line">        t += timedelta(hours=<span class="number">8</span>)</span><br><span class="line">        t = t.replace(day=<span class="number">1</span>)</span><br><span class="line">        <span class="keyword">if</span> t <span class="keyword">in</span> datetimes:</span><br><span class="line">            datetimes[t] += <span class="number">1</span></span><br><span class="line">        <span class="keyword">else</span>:</span><br><span class="line">            datetimes[t] = <span class="number">1</span></span><br><span class="line">        ct += timedelta(minutes=<span class="number">1</span>)</span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> row[<span class="string">&#x27;superchatTimestamps&#x27;</span>]:</span><br><span class="line">        t1 = (i.hour + <span class="number">8</span>) % <span class="number">24</span></span><br><span class="line">        <span class="keyword">if</span> t1 <span class="keyword">in</span> scs:</span><br><span class="line">            scs[t1] += <span class="number">1</span></span><br><span class="line">        <span class="keyword">else</span>:</span><br><span class="line">            scs[t1] = <span class="number">1</span></span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> row[<span class="string">&#x27;membershipTimestamps&#x27;</span>]:</span><br><span class="line">        t2 = (i.hour + <span class="number">8</span>) % <span class="number">24</span></span><br><span class="line">        <span class="keyword">if</span> t2 <span class="keyword">in</span> mbs:</span><br><span class="line">            mbs[t2] += <span class="number">1</span></span><br><span class="line">        <span class="keyword">else</span>:</span><br><span class="line">            mbs[t2] = <span class="number">1</span></span><br><span class="line"></span><br><span class="line">x, y = <span class="built_in">zip</span>(*<span class="built_in">sorted</span>(datetimes.items()))</span><br><span class="line">x2, y2 = <span class="built_in">zip</span>(*<span class="built_in">sorted</span>(scs.items()))</span><br><span class="line">x3, y3 = <span class="built_in">zip</span>(*<span class="built_in">sorted</span>(mbs.items()))</span><br><span class="line">fig, ax = plt.subplots(figsize=(<span class="number">15</span>, <span class="number">10</span>))</span><br><span class="line">ax.plot(x, y)</span><br><span class="line"></span><br><span class="line">ax2 = ax.twiny().twinx()</span><br><span class="line">ax2.set_xticks([])</span><br><span class="line">ax2.tick_params(<span class="string">&#x27;y&#x27;</span>, colors=<span class="string">&#x27;b&#x27;</span>)</span><br><span class="line">ax2.bar(x2, y2, color=<span class="string">&#x27;orange&#x27;</span>, alpha=<span class="number">0.5</span>)</span><br><span class="line"></span><br><span class="line">xfmt = mdates.DateFormatter(<span class="string">&#x27;%H:%M&#x27;</span>)</span><br><span class="line">ax.xaxis.set_major_formatter(xfmt)</span><br><span class="line">ax.xaxis.set_major_locator(mdates.HourLocator())</span><br><span class="line">ax.set_title(<span class="string">&#x27;Streams and Superchats&#x27;</span>)</span><br><span class="line">ax.set_xlabel(<span class="string">&#x27;Time of day&#x27;</span>)</span><br><span class="line">ax.set_ylabel(<span class="string">&#x27;Number of streams live&#x27;</span>)</span><br><span class="line">ax2.set_ylabel(<span class="string">&#x27;Number of superchats in hour&#x27;</span>)</span><br></pre></td></tr></table></figure>
+<pre><code>Text(0, 0.5, &#39;Number of superchats in hour&#39;)
+</code></pre><img src="/2023/02/11/analysis/data-analysis-tutorial_20_1.png" class=""> 
+<p>这图就很有意思了，咱们仔细看看。</p>
+<p>首先我们单看折线图，可以看到在整点左右，有大量的主播开播。这很好理解，因为很多主播都会先预定一个开播时间（大概率是整点），然后提前几分钟开始。然后我们可以看到在每个小时的中间段，折线的增速放缓或者开始下降，这说明主播下播的时间相较于开播来说不是特别固定。然后我们可以看到有大量的主播会选择在晚上八点开始直播，这大概是吃完晚饭的时间，可以说是“黄金时间”。而主播数量十点钟达到顶峰，应该说是为了照顾 996 的打工人嘛（。在此之后主播的数量会几乎匀速下降，在凌晨 2 点左右达到谷底。还有一部分虚拟主播会选择在下午开播，这可能是双休日或者午休摸鱼的时间，随后数量会在下午五点左右的晚饭时间下降。</p>
+<p>Superchat 数量变化趋势从大体上看和主播数量变化相同，我们来想说“但是也会有一些例外情况”，然而，并没有，这可能是因为观众更倾向于在主播刚开播的时候发送 sc 。</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">fig, ax = plt.subplots(figsize=(<span class="number">15</span>, <span class="number">10</span>))</span><br><span class="line">ax.plot(x, y)</span><br><span class="line"></span><br><span class="line">ax2 = ax.twiny().twinx()</span><br><span class="line">ax2.set_xticks([])</span><br><span class="line">ax2.tick_params(<span class="string">&#x27;y&#x27;</span>, colors=<span class="string">&#x27;b&#x27;</span>)</span><br><span class="line">ax2.bar(x3, y3, color=<span class="string">&#x27;blue&#x27;</span>, alpha=<span class="number">0.5</span>)</span><br><span class="line"></span><br><span class="line">xfmt = mdates.DateFormatter(<span class="string">&#x27;%H:%M&#x27;</span>)</span><br><span class="line">ax.xaxis.set_major_formatter(xfmt)</span><br><span class="line">ax.xaxis.set_major_locator(mdates.HourLocator())</span><br><span class="line">ax.set_title(<span class="string">&#x27;Streams and Memberships&#x27;</span>)</span><br><span class="line">ax.set_xlabel(<span class="string">&#x27;Time of day&#x27;</span>)</span><br><span class="line">ax.set_ylabel(<span class="string">&#x27;Number of streams live&#x27;</span>)</span><br><span class="line">ax2.set_ylabel(<span class="string">&#x27;Number of Memberships in hour&#x27;</span>)</span><br></pre></td></tr></table></figure>
+<pre><code>Text(0, 0.5, &#39;Number of Memberships in hour&#39;)
+</code></pre><img src="/2023/02/11/analysis/data-analysis-tutorial_22_1.png" class="">
+<p>大航海的情况和 sc 的情况类似，但是有趣的是它的顶峰和 sc 相比偏移了一个小时，在开播主播数量快速上升的 21 时，大航海的数量反而下降了。同时 19 时的舰长增幅远远超过了主播开播的数量，我认为可能舰长价格相对于 sc 而言更高，而只有更加忠实的观众才会选择购买舰长。因此舰长的数量变化取决于忠实观众观看直播的时间而不是主播开播的时间，观众往往也不会倾向于在主播刚开播的时候购买舰长。另一个有趣的点是 0 时的上舰数量可以和 21 时持平，应该是由于连续包月自动续费的原因。</p>
+<h4 id="本章小结"><a href="#本章小结" class="headerlink" title="本章小结"></a>本章小结</h4><p>尽管我们并没有进行定量分析也没有发现什么突破性的观点，但是我们确实也验证了一些普遍的认识。</p>
+<ul>
+<li>主播往往倾向于在整点左右开播，因为这符合预定的开播时间。</li>
+<li>晚饭后的时间是主播的 “黄金时间”。</li>
+<li>工作时间会有更少的 sc 和舰长。</li>
+<li>和 sc 不同，舰长数量和主播开播的时间不完全同步。</li>
+</ul>
+<h4 id="未来工作"><a href="#未来工作" class="headerlink" title="未来工作"></a>未来工作</h4><p>在这里我们定性地统计了每小时的 sc/舰长 数量，它和每分钟正在直播的主播数量相似。或许我们可以使用<a href="https://www.wikipedia.net/zh-hans/%E6%9F%AF%E5%B0%94%E8%8E%AB%E5%93%A5%E6%B4%9B%E5%A4%AB-%E6%96%AF%E7%B1%B3%E5%B0%94%E8%AF%BA%E5%A4%AB%E6%A3%80%E9%AA%8C">柯尔莫哥洛夫 - 斯米尔诺夫检验</a>来检验两种分布之间是否相同。</p>
+<h3 id="观看-互动数量和-sc-收入的关系"><a href="#观看-互动数量和-sc-收入的关系" class="headerlink" title="观看/互动数量和 sc 收入的关系"></a>观看/互动数量和 sc 收入的关系</h3><p>这一部分开始，内容或许有一些数据挖掘的味道了。就我们的普遍认识而言，观众越多的主播能够赚到更多的钱，但是他们究竟遵从一个什么样的关系呢？是线性吗？还是指数？还是其他的什么？我们先画张图看看罢。</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">fig, ax = plt.subplots(figsize=(<span class="number">15</span>, <span class="number">10</span>))</span><br><span class="line">ax.plot(df[<span class="string">&#x27;interactionCount&#x27;</span>] ,df[<span class="string">&#x27;superchatIncome&#x27;</span>], <span class="string">&#x27;o&#x27;</span>, alpha = <span class="number">0.5</span>)</span><br><span class="line"></span><br><span class="line">ax.set_xlabel(<span class="string">&quot;Interaction Count&quot;</span>)</span><br><span class="line">ax.set_ylabel(<span class="string">&quot;Superchat Earnings&quot;</span>)</span><br><span class="line">ax.set_title(<span class="string">&quot;Interaction Count vs Superchat Earnings (linear scale)&quot;</span>)</span><br></pre></td></tr></table></figure>
+<pre><code>Text(0.5, 1.0, &#39;Interaction Count vs Superchat Earnings (linear scale)&#39;)
+</code></pre>
+<p>emm…感觉很河里了，但是确实不能提供什么信息，因为低观众且低 sc 的数量太多了，而且我们也没有办法去除这些数据。我们可以使用<a href="https://www.wikipedia.net/zh-hans/%E5%AF%B9%E6%95%B0%E5%8F%98%E6%8D%A2">对数变换</a>来解决这个问题。</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">fig, ax = plt.subplots(figsize=(<span class="number">15</span>, <span class="number">10</span>))</span><br><span class="line">ax.plot(df[<span class="string">&#x27;interactionCount&#x27;</span>] ,df[<span class="string">&#x27;superchatIncome&#x27;</span>], <span class="string">&#x27;o&#x27;</span>, alpha = <span class="number">0.5</span>)</span><br><span class="line">ax.set_xscale(<span class="string">&#x27;log&#x27;</span>)</span><br><span class="line">ax.set_yscale(<span class="string">&#x27;log&#x27;</span>)</span><br><span class="line">plt.xlim(<span class="number">10</span>, <span class="number">1e5</span>)</span><br><span class="line"></span><br><span class="line">ax.set_xlabel(<span class="string">&quot;Interaction Count&quot;</span>)</span><br><span class="line">ax.set_ylabel(<span class="string">&quot;Superchat Earnings&quot;</span>)</span><br><span class="line">ax.set_title(<span class="string">&quot;Interaction Count vs Superchat Earnings (log-log scale)&quot;</span>)</span><br></pre></td></tr></table></figure>
+<pre><code>Text(0.5, 1.0, &#39;Interaction Count vs Superchat Earnings (log-log scale)&#39;)
+</code></pre><img src="/2023/02/11/analysis/data-analysis-tutorial_27_1.png" class="">
+<p>现在，我们可以得到更多的信息了。比如：</p>
+<ul>
+<li>最下方有一条平行的线，它大概代表了 sc 的最低值（30元），然后另外也有几条平行线。它们代表了只有几个人发送小额 sc 的情况。</li>
+<li>就趋势上看，我们可以看到一个上升的趋势。</li>
+</ul>
+<p>然后，我们来尝试一下能不能拟合出这个趋势。</p>
+<h4 id="注意，下面有一部分是反面教材"><a href="#注意，下面有一部分是反面教材" class="headerlink" title="注意，下面有一部分是反面教材"></a>注意，下面有一部分是反面教材</h4><figure class="highlight python"><table><tr><td class="code"><pre><span class="line">slope, intercept, r_value, p_value, std_err = stats.linregress(df[<span class="string">&#x27;interactionCount&#x27;</span>] ,df[<span class="string">&#x27;superchatIncome&#x27;</span>])</span><br><span class="line"><span class="built_in">print</span>(<span class="string">&#x27;Regression from scipy y=mx+b: \ny = %f x + %f&#x27;</span>%(slope, intercept))</span><br><span class="line"><span class="built_in">print</span>(<span class="string">&#x27;p-value: %e&#x27;</span>%(p_value))</span><br><span class="line"><span class="built_in">print</span>(<span class="string">&#x27;r-value: %f&#x27;</span>%(r_value))</span><br><span class="line"><span class="built_in">print</span>(<span class="string">&#x27;standard error: %f&#x27;</span>%(std_err))</span><br></pre></td></tr></table></figure>
+<pre><code>Regression from scipy y=mx+b: 
+y = 0.856222 x + -486.326623
+p-value: 1.919459e-216
+r-value: 0.573294
+standard error: 0.024598
+</code></pre><p>嘛， python 就是不错，几行代码就拟合出来了。这个 p 值看上去不错，但是这个 r 感觉就很一般，不过这都不是什么大问题。我们来看看这个拟合的直线。</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">fig, ax = plt.subplots(figsize=(<span class="number">15</span>, <span class="number">10</span>))</span><br><span class="line">ax.plot(df[<span class="string">&#x27;interactionCount&#x27;</span>] ,df[<span class="string">&#x27;superchatIncome&#x27;</span>], <span class="string">&#x27;o&#x27;</span>, alpha = <span class="number">0.5</span>)</span><br><span class="line">ax.set_xscale(<span class="string">&#x27;log&#x27;</span>)</span><br><span class="line">ax.set_yscale(<span class="string">&#x27;log&#x27;</span>)</span><br><span class="line">plt.xlim(<span class="number">10</span>, <span class="number">1e5</span>)</span><br><span class="line">plt.ylim(<span class="number">10</span>, <span class="number">1e5</span>)</span><br><span class="line"></span><br><span class="line">ax.set_xlabel(<span class="string">&quot;Interaction Count&quot;</span>)</span><br><span class="line">ax.set_ylabel(<span class="string">&quot;Superchat Earnings&quot;</span>)</span><br><span class="line">ax.set_title(<span class="string">&quot;Interaction Count vs Superchat Earnings (log-log scale)&quot;</span>)</span><br><span class="line"></span><br><span class="line">x = np.array(<span class="built_in">range</span>(<span class="number">10</span>, <span class="number">10</span>**<span class="number">5</span>, <span class="number">5</span>))</span><br><span class="line">ax.plot(x, slope * x + intercept)</span><br><span class="line">plt.show()</span><br></pre></td></tr></table></figure>
+<img src="/2023/02/11/analysis/data-analysis-tutorial_32_0.png" class="">
+<p>非常的神秘啊，这条线是一条曲线。雀氏，因为在 log-log 图里，想要得到一条直线需要一个类似于 $y=ax^k$ 的函数。尽管这条拟合的直线是<em>可以</em>的，但是我们还是希望能在 log-log 图里得到一条直线，这样才不会忽略数值过小的点。</p>
+<p>为了得到一条指数拟合的曲线，我们有两种选择：</p>
+<ul>
+<li>通过一些非常时尚的回归方法得到结果。</li>
+<li>两边取对数，得到形如 $\log(y)=k\log(x)+\log(a)$ 的形式，然后进行线性拟合。</li>
+</ul>
+<p>我们在这里会选择第二种方法，不过需要注意数据中有一些没有 sc 的数据，我们可以选择去掉它们或者令它的值为 0.01 元。这里我们选择去掉它们。</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">df_prime = df[[<span class="string">&#x27;interactionCount&#x27;</span>, <span class="string">&#x27;superchatIncome&#x27;</span>]]</span><br><span class="line">df_prime = df_prime[df_prime[<span class="string">&#x27;superchatIncome&#x27;</span>] &gt; <span class="number">0</span>]</span><br><span class="line">df_prime[<span class="string">&#x27;interactionCount&#x27;</span>] = df_prime[<span class="string">&#x27;interactionCount&#x27;</span>].apply(math.log)</span><br><span class="line">df_prime[<span class="string">&#x27;superchatIncome&#x27;</span>] = df_prime[<span class="string">&#x27;superchatIncome&#x27;</span>].apply(math.log)</span><br><span class="line"></span><br><span class="line">slope, intercept, r_value, p_value, std_err = stats.linregress(df_prime[<span class="string">&#x27;interactionCount&#x27;</span>], df_prime[<span class="string">&#x27;superchatIncome&#x27;</span>])</span><br><span class="line"><span class="built_in">print</span>(<span class="string">&#x27;Regression from scipy y=mx+b: \ny = %f x + %f&#x27;</span>%(slope, intercept))</span><br><span class="line"><span class="built_in">print</span>(<span class="string">&#x27;p-value: %e&#x27;</span>%(p_value))</span><br><span class="line"><span class="built_in">print</span>(<span class="string">&#x27;r-value: %f&#x27;</span>%(r_value))</span><br><span class="line"><span class="built_in">print</span>(<span class="string">&#x27;r squared: %f&#x27;</span>%(r_value**<span class="number">2</span>))</span><br><span class="line"><span class="built_in">print</span>(<span class="string">&#x27;standard error: %f&#x27;</span>%(std_err))</span><br></pre></td></tr></table></figure>
+<pre><code>Regression from scipy y=mx+b: 
+y = 1.002485 x + -1.110788
+p-value: 5.818056e-309
+r-value: 0.689253
+r squared: 0.475069
+standard error: 0.022513
+</code></pre><p>我们可以看到， r 值高了一些，感觉还行罢。我们来看看这条曲线。</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">fig, ax = plt.subplots(figsize=(<span class="number">15</span>, <span class="number">10</span>))</span><br><span class="line">ax.plot(df[<span class="string">&#x27;interactionCount&#x27;</span>], df[<span class="string">&#x27;superchatIncome&#x27;</span>], <span class="string">&#x27;o&#x27;</span>, alpha = <span class="number">0.5</span>)</span><br><span class="line">ax.set_xscale(<span class="string">&#x27;log&#x27;</span>)</span><br><span class="line">ax.set_yscale(<span class="string">&#x27;log&#x27;</span>)</span><br><span class="line">plt.xlim(<span class="number">10</span>, <span class="number">1e5</span>)</span><br><span class="line">plt.ylim(<span class="number">10</span>, <span class="number">1e5</span>)</span><br><span class="line"></span><br><span class="line">ax.set_xlabel(<span class="string">&quot;Interaction Count&quot;</span>)</span><br><span class="line">ax.set_ylabel(<span class="string">&quot;Superchat Earnings&quot;</span>)</span><br><span class="line">ax.set_title(<span class="string">&quot;Interaction Count vs Superchat Earnings (log-log scale)&quot;</span>)</span><br><span class="line"></span><br><span class="line">x = np.array(<span class="built_in">range</span>(<span class="number">10</span>, <span class="number">10</span>**<span class="number">5</span>, <span class="number">5</span>))</span><br><span class="line">ax.plot(x, (math.e**intercept) * x**slope)</span><br><span class="line">plt.show()</span><br></pre></td></tr></table></figure>
+<img src="/2023/02/11/analysis/data-analysis-tutorial_36_0.png" class="">
+<p>当然，我们可以给数据取对数而不是给坐标系取对数，这样其实对后面的处理更有好处。所幸，我们有了 <code>df_prime</code> ，所以只要把它拿来用就行了。</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">fig, ax = plt.subplots(figsize=(<span class="number">15</span>, <span class="number">10</span>))</span><br><span class="line">ax.plot(df_prime[<span class="string">&#x27;interactionCount&#x27;</span>], df_prime[<span class="string">&#x27;superchatIncome&#x27;</span>], <span class="string">&#x27;o&#x27;</span>, alpha = <span class="number">0.5</span>)</span><br><span class="line">plt.xlim(<span class="number">3</span>, <span class="number">12</span>)</span><br><span class="line">plt.ylim(<span class="number">3</span>, <span class="number">12</span>)</span><br><span class="line"></span><br><span class="line">ax.set_xlabel(<span class="string">&quot;Interaction Count&quot;</span>)</span><br><span class="line">ax.set_ylabel(<span class="string">&quot;Superchat Earnings&quot;</span>)</span><br><span class="line">ax.set_title(<span class="string">&quot;Interaction Count vs Superchat Earnings (linear scale)&quot;</span>)</span><br><span class="line"></span><br><span class="line">x = np.array([i/<span class="number">10.0</span> <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">30</span>,<span class="number">130</span>)])</span><br><span class="line">ax.plot(x, slope * x + intercept)</span><br><span class="line">plt.show()</span><br></pre></td></tr></table></figure>
+<img src="/2023/02/11/analysis/data-analysis-tutorial_38_0.png" class="">
+<p>我们同样可以画出残差，来看看我们的回归效果咋样。</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">fig, ax = plt.subplots(figsize=(<span class="number">15</span>, <span class="number">10</span>))</span><br><span class="line"></span><br><span class="line">residuals = []</span><br><span class="line"><span class="keyword">for</span> _, row <span class="keyword">in</span> df_prime.iterrows():</span><br><span class="line">    residuals.append(row[<span class="string">&#x27;superchatIncome&#x27;</span>] - (slope * row[<span class="string">&#x27;interactionCount&#x27;</span>] + intercept))</span><br><span class="line"></span><br><span class="line">ax.plot(df_prime[<span class="string">&#x27;interactionCount&#x27;</span>], residuals, <span class="string">&#x27;o&#x27;</span>, alpha = <span class="number">0.5</span>)</span><br><span class="line">ax.set_xlabel(<span class="string">&quot;Interaction Count&quot;</span>)</span><br><span class="line">ax.set_ylabel(<span class="string">&quot;Residuals of Superchat Earnings&quot;</span>)</span><br><span class="line">ax.set_title(<span class="string">&quot;Residuals&quot;</span>)</span><br><span class="line"></span><br><span class="line">ax.axhline(color=<span class="string">&#x27;gray&#x27;</span>)</span><br><span class="line">plt.show()</span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span>(<span class="string">&quot;a = &quot;</span>, math.e**intercept)</span><br><span class="line"><span class="built_in">print</span>(<span class="string">&quot;k = &quot;</span>, slope)</span><br></pre></td></tr></table></figure>
+<img src="/2023/02/11/analysis/data-analysis-tutorial_40_0.png" class="">
+<pre><code>a =  0.3292993009957897
+k =  1.0024851841520102
+</code></pre><p>看上去不错，我们可以将残差分成四个部分，然后看一看它的小提琴图。</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">vc2 = df_prime[<span class="string">&#x27;interactionCount&#x27;</span>].apply(<span class="keyword">lambda</span> x: <span class="built_in">round</span>(x/<span class="number">2</span>, <span class="number">0</span>) * <span class="number">2</span>)</span><br><span class="line"></span><br><span class="line">sns.violinplot(x=vc2, y=residuals)</span><br></pre></td></tr></table></figure>
+<pre><code>&lt;AxesSubplot:xlabel=&#39;interactionCount&#39;&gt;
+</code></pre><img src="/2023/02/11/analysis/data-analysis-tutorial_42_1.png" class="">
+<p>看上去分布很平均，除了数据值比较小的部分拟合地不是特别好，不过差异不算特别大。</p>
+<p>最后我们可以说我们得到了这样的一个公式：</p>
+<script type="math/tex; mode=display">
+y = 0.3292993009957897x^{1.0024851841520102}</script><p>其中 $x$ 是互动人数， $y$ 是 sc 的收入。</p>
+<h4 id="个人势-——-好事还是坏事？"><a href="#个人势-——-好事还是坏事？" class="headerlink" title="个人势 —— 好事还是坏事？"></a>个人势 —— 好事还是坏事？</h4><p>或许你已经注意到了，我选择了许多所属为 <code>independent</code> 的虚拟主播，他们代表的是不属于任何公司的个人势，那么他们的数据和平均相比有什么差异呢？</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">inde = c_names.loc[c_names[<span class="string">&#x27;affiliation&#x27;</span>] == <span class="string">&#x27;independent&#x27;</span>]</span><br><span class="line">inde = df.loc[df[<span class="string">&#x27;liver&#x27;</span>].isin(inde[<span class="string">&#x27;name&#x27;</span>])]</span><br><span class="line"></span><br><span class="line">df_prime = inde[[<span class="string">&#x27;interactionCount&#x27;</span>, <span class="string">&#x27;superchatIncome&#x27;</span>]]</span><br><span class="line">df_prime = df_prime[df_prime[<span class="string">&#x27;superchatIncome&#x27;</span>] &gt; <span class="number">0</span>]</span><br><span class="line">df_prime[<span class="string">&#x27;interactionCount&#x27;</span>] = df_prime[<span class="string">&#x27;interactionCount&#x27;</span>].apply(math.log)</span><br><span class="line">df_prime[<span class="string">&#x27;superchatIncome&#x27;</span>] = df_prime[<span class="string">&#x27;superchatIncome&#x27;</span>].apply(math.log)</span><br><span class="line"></span><br><span class="line">slope_prime, intercept_prime, r_value_prime, p_value_prime, std_err_prime = stats.linregress(df_prime[<span class="string">&#x27;interactionCount&#x27;</span>], df_prime[<span class="string">&#x27;superchatIncome&#x27;</span>])</span><br><span class="line"><span class="built_in">print</span>(<span class="string">&#x27;Regression from scipy y=mx+b: \ny = %f x + %f&#x27;</span>%(slope_prime, intercept_prime))</span><br><span class="line"><span class="built_in">print</span>(<span class="string">&#x27;p-value: %e&#x27;</span>%(p_value_prime))</span><br><span class="line"><span class="built_in">print</span>(<span class="string">&#x27;r-value: %f&#x27;</span>%(r_value_prime))</span><br><span class="line"><span class="built_in">print</span>(<span class="string">&#x27;r squared: %f&#x27;</span>%(r_value_prime**<span class="number">2</span>))</span><br><span class="line"><span class="built_in">print</span>(<span class="string">&#x27;standard error: %f&#x27;</span>%(std_err_prime))</span><br><span class="line"><span class="built_in">print</span>(<span class="string">&#x27;a = &#x27;</span>, math.e**intercept_prime)</span><br><span class="line"><span class="built_in">print</span>(<span class="string">&#x27;k = &#x27;</span>, slope_prime)</span><br><span class="line"></span><br><span class="line">fig, ax = plt.subplots(figsize=(<span class="number">15</span>, <span class="number">10</span>))</span><br><span class="line">ax.plot(inde[<span class="string">&#x27;interactionCount&#x27;</span>], inde[<span class="string">&#x27;superchatIncome&#x27;</span>], <span class="string">&#x27;o&#x27;</span>, alpha = <span class="number">0.5</span>)</span><br><span class="line">ax.set_xscale(<span class="string">&#x27;log&#x27;</span>)</span><br><span class="line">ax.set_yscale(<span class="string">&#x27;log&#x27;</span>)</span><br><span class="line">plt.xlim(<span class="number">10</span>, <span class="number">1e5</span>)</span><br><span class="line">plt.ylim(<span class="number">10</span>, <span class="number">1e5</span>)</span><br><span class="line"></span><br><span class="line">ax.set_xlabel(<span class="string">&quot;Interaction Count&quot;</span>)</span><br><span class="line">ax.set_ylabel(<span class="string">&quot;Superchat Earnings&quot;</span>)</span><br><span class="line">ax.set_title(<span class="string">&quot;Interaction Count vs Superchat Earnings (log-log scale)&quot;</span>)</span><br><span class="line"></span><br><span class="line">x = np.array(<span class="built_in">range</span>(<span class="number">10</span>, <span class="number">10</span>**<span class="number">5</span>, <span class="number">5</span>))</span><br><span class="line">ax.plot(x, (math.e**intercept_prime) * x**slope_prime, color=<span class="string">&#x27;C1&#x27;</span>, label=<span class="string">&#x27;independent line&#x27;</span>)</span><br><span class="line">ax.plot(x, (math.e**intercept) * x**slope, color=<span class="string">&#x27;C2&#x27;</span>, label=<span class="string">&#x27;all line&#x27;</span>)</span><br><span class="line">plt.legend(loc=<span class="string">&#x27;upper left&#x27;</span>)</span><br><span class="line">plt.show()</span><br></pre></td></tr></table></figure>
+<pre><code>Regression from scipy y=mx+b: 
+y = 1.161990 x + -2.306773
+p-value: 6.064823e-114
+r-value: 0.699629
+r squared: 0.489481
+standard error: 0.042877
+a =  0.09958203755065093
+k =  1.1619896703273997
+</code></pre><img src="/2023/02/11/analysis/data-analysis-tutorial_45_1.png" class="">
+<p>嗯，这组数据的 r 方更高，说明拟合地更好，但是只是好一点，不能好多了。橙色的线表示个人势主播的拟合数据，绿色的线表示总体的拟合数据。就两条曲线相交情况来看，个人势拥有更低的下限和更高的上限，很符合我的预期。而两条线的焦点差不多位于中央的位置，说明可以说中流的主播加入组织或者成为个人势确实差不多。不过考虑到工会会有所抽成之类的，所以只能说是头部主播个人势比较赚。</p>
+<p>然后我们来看看不同的企业的数据，看看他们的拟合情况。由于数据量的关系，我们将他们分成三类 —— VirtualReal 、 PSP 和其他。</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">vr = c_names[c_names[<span class="string">&#x27;affiliation&#x27;</span>] == <span class="string">&#x27;vr&#x27;</span>]</span><br><span class="line">vr = df.loc[df[<span class="string">&#x27;liver&#x27;</span>].isin(vr[<span class="string">&#x27;name&#x27;</span>])]</span><br><span class="line">psp = c_names[c_names[<span class="string">&#x27;affiliation&#x27;</span>] == <span class="string">&#x27;psp&#x27;</span>]</span><br><span class="line">psp = df.loc[df[<span class="string">&#x27;liver&#x27;</span>].isin(psp[<span class="string">&#x27;name&#x27;</span>])]</span><br><span class="line">other = c_names.loc[~c_names[<span class="string">&#x27;affiliation&#x27;</span>].isin([<span class="string">&#x27;vr&#x27;</span>, <span class="string">&#x27;psp&#x27;</span>, <span class="string">&#x27;independent&#x27;</span>])]</span><br><span class="line">other = df.loc[df[<span class="string">&#x27;liver&#x27;</span>].isin(other[<span class="string">&#x27;name&#x27;</span>])]</span><br><span class="line"></span><br><span class="line">COLORS = [<span class="string">&#x27;#A6BDD7&#x27;</span>, <span class="string">&#x27;#FFB300&#x27;</span>, <span class="string">&#x27;#007D34&#x27;</span>, <span class="string">&#x27;#F6768E&#x27;</span>]</span><br><span class="line">fig, ax = plt.subplots(figsize=(<span class="number">15</span>, <span class="number">10</span>))</span><br><span class="line">ax.plot(other[<span class="string">&#x27;interactionCount&#x27;</span>], other[<span class="string">&#x27;superchatIncome&#x27;</span>], <span class="string">&#x27;o&#x27;</span>, color=COLORS[<span class="number">0</span>], label=<span class="string">&#x27;others&#x27;</span>)</span><br><span class="line">ax.plot(vr[<span class="string">&#x27;interactionCount&#x27;</span>], vr[<span class="string">&#x27;superchatIncome&#x27;</span>], <span class="string">&#x27;o&#x27;</span>, color=COLORS[<span class="number">1</span>], label=<span class="string">&#x27;vr&#x27;</span>)</span><br><span class="line">ax.plot(psp[<span class="string">&#x27;interactionCount&#x27;</span>], psp[<span class="string">&#x27;superchatIncome&#x27;</span>], <span class="string">&#x27;o&#x27;</span>, color=COLORS[<span class="number">2</span>], label=<span class="string">&#x27;psp&#x27;</span>)</span><br><span class="line"></span><br><span class="line">ax.set_xscale(<span class="string">&#x27;log&#x27;</span>)</span><br><span class="line">ax.set_yscale(<span class="string">&#x27;log&#x27;</span>)</span><br><span class="line"></span><br><span class="line">plt.xlim(<span class="number">10</span>, <span class="number">1e5</span>)</span><br><span class="line">plt.ylim(<span class="number">10</span>, <span class="number">1e5</span>)</span><br><span class="line"></span><br><span class="line">ax.set_xlabel(<span class="string">&quot;Interaction Count&quot;</span>)</span><br><span class="line">ax.set_ylabel(<span class="string">&quot;Superchat Earnings&quot;</span>)</span><br><span class="line">ax.set_title(<span class="string">&quot;Interaction Count vs Superchat Earnings (COMPANY ONLY / log-log scale)&quot;</span>)</span><br><span class="line"></span><br><span class="line">plt.legend(loc=<span class="string">&#x27;upper left&#x27;</span>)</span><br><span class="line">plt.show()</span><br></pre></td></tr></table></figure>
+<img src="/2023/02/11/analysis/data-analysis-tutorial_47_0.png" class="">
+<p>然后我们仔细看看每个分类，然后分别加入拟合线。</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">company = c_names[c_names[<span class="string">&#x27;affiliation&#x27;</span>] != <span class="string">&#x27;independent&#x27;</span>]</span><br><span class="line">company = df.loc[df[<span class="string">&#x27;liver&#x27;</span>].isin(company[<span class="string">&#x27;name&#x27;</span>])]</span><br><span class="line"></span><br><span class="line">coms = [vr, psp, other]</span><br><span class="line">labels = [<span class="string">&#x27;vr&#x27;</span>, <span class="string">&#x27;psp&#x27;</span>, <span class="string">&#x27;other&#x27;</span>]</span><br><span class="line"></span><br><span class="line">x = np.array(<span class="built_in">range</span>(<span class="number">10</span>, <span class="number">10</span>**<span class="number">5</span>, <span class="number">5</span>))</span><br><span class="line">idx = <span class="number">1</span></span><br><span class="line"></span><br><span class="line">regs = []</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> com <span class="keyword">in</span> coms:</span><br><span class="line">    fig, ax = plt.subplots(figsize=(<span class="number">15</span>, <span class="number">10</span>))</span><br><span class="line">    ax.plot(company[<span class="string">&#x27;interactionCount&#x27;</span>], company[<span class="string">&#x27;superchatIncome&#x27;</span>], <span class="string">&#x27;o&#x27;</span>, color=COLORS[<span class="number">0</span>], label=<span class="string">&#x27;others&#x27;</span>)</span><br><span class="line">    ax.plot(com[<span class="string">&#x27;interactionCount&#x27;</span>], com[<span class="string">&#x27;superchatIncome&#x27;</span>], <span class="string">&#x27;o&#x27;</span>, color=COLORS[idx], label=labels[idx-<span class="number">1</span>])</span><br><span class="line">    </span><br><span class="line">    ax.set_xscale(<span class="string">&#x27;log&#x27;</span>)</span><br><span class="line">    ax.set_yscale(<span class="string">&#x27;log&#x27;</span>)</span><br><span class="line"></span><br><span class="line">    plt.xlim(<span class="number">10</span>, <span class="number">1e5</span>)</span><br><span class="line">    plt.ylim(<span class="number">10</span>, <span class="number">1e5</span>)</span><br><span class="line"></span><br><span class="line">    com_prime = com[[<span class="string">&#x27;interactionCount&#x27;</span>, <span class="string">&#x27;superchatIncome&#x27;</span>]]</span><br><span class="line">    com_prime = com_prime[com_prime[<span class="string">&#x27;superchatIncome&#x27;</span>] &gt; <span class="number">0</span>]</span><br><span class="line">    com_prime[<span class="string">&#x27;interactionCount&#x27;</span>] = com_prime[<span class="string">&#x27;interactionCount&#x27;</span>].apply(math.log)</span><br><span class="line">    com_prime[<span class="string">&#x27;superchatIncome&#x27;</span>] = com_prime[<span class="string">&#x27;superchatIncome&#x27;</span>].apply(math.log)</span><br><span class="line">    slope_prime, intercept_prime, r_value_prime, p_value_prime, std_err_prime = stats.linregress(com_prime[<span class="string">&#x27;interactionCount&#x27;</span>], com_prime[<span class="string">&#x27;superchatIncome&#x27;</span>])</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&#x27;Regression from scipy y=mx+b: \ny = %f x + %f&#x27;</span>%(slope_prime, intercept_prime))</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&#x27;p-value: %e&#x27;</span>%(p_value_prime))</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&#x27;r-value: %f&#x27;</span>%(r_value_prime))</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&#x27;r squared: %f&#x27;</span>%(r_value_prime**<span class="number">2</span>))</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&#x27;standard error: %f&#x27;</span>%(std_err_prime))</span><br><span class="line"></span><br><span class="line">    ax.plot(x, (math.e**intercept_prime) * x**slope_prime, color=COLORS[idx])</span><br><span class="line">    regs.append([slope_prime, intercept_prime])</span><br><span class="line"></span><br><span class="line">    ax.set_xlabel(<span class="string">&quot;Interaction Count&quot;</span>)</span><br><span class="line">    ax.set_ylabel(<span class="string">&quot;Superchat Earnings&quot;</span>)</span><br><span class="line">    ax.set_title(<span class="string">&quot;Interaction Count vs Superchat Earnings (&#123;0&#125; ONLY / log-log scale)&quot;</span>.<span class="built_in">format</span>(labels[idx-<span class="number">1</span>]))</span><br><span class="line"></span><br><span class="line">    idx += <span class="number">1</span></span><br><span class="line">    plt.legend(loc=<span class="string">&#x27;upper left&#x27;</span>)</span><br><span class="line">    plt.show()</span><br></pre></td></tr></table></figure>
+<pre><code>Regression from scipy y=mx+b: 
+y = 1.040950 x + -1.132949
+p-value: 6.036379e-133
+r-value: 0.726136
+r squared: 0.527274
+standard error: 0.034761
+</code></pre><img src="/2023/02/11/analysis/data-analysis-tutorial_49_1.png" class="">
+<pre><code>Regression from scipy y=mx+b: 
+y = 1.046183 x + -1.505542
+p-value: 3.293558e-34
+r-value: 0.695976
+r squared: 0.484382
+standard error: 0.071959
+</code></pre><img src="/2023/02/11/analysis/data-analysis-tutorial_49_3.png" class="">
+<pre><code>Regression from scipy y=mx+b: 
+y = 0.874677 x + -0.643986
+p-value: 1.790019e-44
+r-value: 0.628465
+r squared: 0.394969
+standard error: 0.054818
+</code></pre><img src="/2023/02/11/analysis/data-analysis-tutorial_49_5.png" class="">
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">fig, ax = plt.subplots(figsize=(<span class="number">15</span>, <span class="number">10</span>))</span><br><span class="line">ax.plot(other[<span class="string">&#x27;interactionCount&#x27;</span>], other[<span class="string">&#x27;superchatIncome&#x27;</span>], <span class="string">&#x27;o&#x27;</span>, color=COLORS[<span class="number">0</span>], label=<span class="string">&#x27;others&#x27;</span>)</span><br><span class="line">ax.plot(vr[<span class="string">&#x27;interactionCount&#x27;</span>], vr[<span class="string">&#x27;superchatIncome&#x27;</span>], <span class="string">&#x27;o&#x27;</span>, color=COLORS[<span class="number">1</span>], label=<span class="string">&#x27;vr&#x27;</span>)</span><br><span class="line">ax.plot(psp[<span class="string">&#x27;interactionCount&#x27;</span>], psp[<span class="string">&#x27;superchatIncome&#x27;</span>], <span class="string">&#x27;o&#x27;</span>, color=COLORS[<span class="number">2</span>], label=<span class="string">&#x27;psp&#x27;</span>)</span><br><span class="line"></span><br><span class="line">ax.set_xscale(<span class="string">&#x27;log&#x27;</span>)</span><br><span class="line">ax.set_yscale(<span class="string">&#x27;log&#x27;</span>)</span><br><span class="line"></span><br><span class="line">plt.xlim(<span class="number">10</span>, <span class="number">1e5</span>)</span><br><span class="line">plt.ylim(<span class="number">10</span>, <span class="number">1e5</span>)</span><br><span class="line"></span><br><span class="line">ax.set_xlabel(<span class="string">&quot;Interaction Count&quot;</span>)</span><br><span class="line">ax.set_ylabel(<span class="string">&quot;Superchat Earnings&quot;</span>)</span><br><span class="line">ax.set_title(<span class="string">&quot;Interaction Count vs Superchat Earnings (COMPANY ONLY / log-log scale)&quot;</span>)</span><br><span class="line"></span><br><span class="line">idx = <span class="number">0</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> reg <span class="keyword">in</span> regs:</span><br><span class="line">    ax.plot(x, (math.e**reg[<span class="number">1</span>]) * x**reg[<span class="number">0</span>], color=COLORS[idx])</span><br><span class="line">    idx += <span class="number">1</span></span><br><span class="line"></span><br><span class="line">plt.legend(loc=<span class="string">&#x27;upper left&#x27;</span>)</span><br><span class="line">plt.show()</span><br></pre></td></tr></table></figure>
+<img src="/2023/02/11/analysis/data-analysis-tutorial_50_0.png" class="">
+<p>很明显，不同的企业会有不同的拟合曲线，甚至有一种 PSP 行将就木的感觉。就数据上看，其他类的主播表现最好，但是其实这也是我们数据选取的结果，体量相对小的企业容易捧出更加热门的主播，而像 VR 这样走量的企业就会有上下限差异比较大的情况。</p>
+<h4 id="本章总结"><a href="#本章总结" class="headerlink" title="本章总结"></a>本章总结</h4><ul>
+<li>我们定量分析了虚拟主播互动人数和 sc 收入之间的关系，得到了一个指数拟合的曲线。</li>
+<li>就个人势来看，他们的收入水平处于一种下限更低但是上限更高的状态。</li>
+<li>企业势中，选择一个冷门的企业或许是一个好的选择。</li>
+</ul>
+<h2 id="整点机器学习"><a href="#整点机器学习" class="headerlink" title="整点机器学习"></a>整点机器学习</h2><p>机器学习，他来了。在这里我们想看一看多因素作用下的 sc/舰长 收入情况，以及不同的主播是否有直播标题的用语偏好。笼统的来说，前者属于回归问题，后者属于分类问题。</p>
+<p>首先隆重介绍 scikit-learn algorithm cheat-sheet ，它可以帮助我们快速选择合适的算法。</p>
+<img src="/2023/02/11/analysis/ml_map.png" class="">
+<h3 id="回归"><a href="#回归" class="headerlink" title="回归"></a>回归</h3><p>我们想用 <code>timeDuration</code> / <code>followers</code> / <code>watchCount</code> / <code>interactionCount</code> 来预测 <code>superchatIncome</code> 和 <code>membershipIncome</code> 。根据上面的图，我们可以选择 <code>Lasso</code> 或者 <code>ElasticNet</code> 。但是在实际操作过程中，我发现这俩都不如直接线性回归$^1$。</p>
+<p>$^1$ 事实上，这两种方法均基于线性回归（使用最小平方作为 loss 函数），<code>Lasso</code> 使用 L1 正则化，<code>ElasticNet</code> 使用 L1 和 L2 混合正则化。</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> sklearn.linear_model</span><br><span class="line"></span><br><span class="line">ml = df[[<span class="string">&#x27;timeDuration&#x27;</span>, <span class="string">&#x27;followers&#x27;</span>, <span class="string">&#x27;watchCount&#x27;</span>, <span class="string">&#x27;interactionCount&#x27;</span>, <span class="string">&#x27;superchatIncome&#x27;</span>, <span class="string">&#x27;membershipIncome&#x27;</span>]]</span><br><span class="line"></span><br><span class="line">ml = ml[ml[<span class="string">&#x27;superchatIncome&#x27;</span>] &gt; <span class="number">0</span>]</span><br><span class="line">ml = ml[ml[<span class="string">&#x27;membershipIncome&#x27;</span>] &gt; <span class="number">0</span>]</span><br><span class="line">ml = ml[ml[<span class="string">&#x27;watchCount&#x27;</span>] &gt; <span class="number">0</span>]</span><br><span class="line">ml[<span class="string">&#x27;timeDuration&#x27;</span>] /= <span class="number">60000</span></span><br><span class="line">ml[<span class="string">&#x27;followers&#x27;</span>] = ml[<span class="string">&#x27;followers&#x27;</span>].apply(math.log)</span><br><span class="line">ml[<span class="string">&#x27;watchCount&#x27;</span>] = ml[<span class="string">&#x27;watchCount&#x27;</span>].apply(math.log)</span><br><span class="line">ml[<span class="string">&#x27;interactionCount&#x27;</span>] = ml[<span class="string">&#x27;interactionCount&#x27;</span>].apply(math.log)</span><br><span class="line">ml[<span class="string">&#x27;superchatIncome&#x27;</span>] = ml[<span class="string">&#x27;superchatIncome&#x27;</span>].apply(math.log)</span><br><span class="line">ml[<span class="string">&#x27;membershipIncome&#x27;</span>] = ml[<span class="string">&#x27;membershipIncome&#x27;</span>].apply(math.log)</span><br><span class="line"></span><br><span class="line">y = ml[<span class="string">&#x27;superchatIncome&#x27;</span>]</span><br><span class="line">y_prime = ml[<span class="string">&#x27;membershipIncome&#x27;</span>]</span><br><span class="line">X = ml[[<span class="string">&#x27;timeDuration&#x27;</span>, <span class="string">&#x27;followers&#x27;</span>, <span class="string">&#x27;watchCount&#x27;</span>, <span class="string">&#x27;interactionCount&#x27;</span>]]</span><br><span class="line">X.head()</span><br></pre></td></tr></table></figure>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>timeDuration</th>
+      <th>followers</th>
+      <th>watchCount</th>
+      <th>interactionCount</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>1</th>
+      <td>197.414133</td>
+      <td>10.451118</td>
+      <td>8.502689</td>
+      <td>6.475433</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>141.032567</td>
+      <td>10.451118</td>
+      <td>8.126223</td>
+      <td>6.111467</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>248.708783</td>
+      <td>10.451118</td>
+      <td>8.401782</td>
+      <td>6.354370</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>781.364767</td>
+      <td>10.451118</td>
+      <td>8.603738</td>
+      <td>5.872118</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>125.739050</td>
+      <td>10.451118</td>
+      <td>7.900266</td>
+      <td>5.758902</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+
+
+
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> sklearn.model_selection <span class="keyword">import</span> train_test_split</span><br><span class="line"></span><br><span class="line">X_train, X_test, y_train, y_test = train_test_split(X, y, stratify=X[<span class="string">&#x27;followers&#x27;</span>], random_state = <span class="number">2</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># linreg = sklearn.linear_model.Lasso(alpha=0.114514)</span></span><br><span class="line"><span class="comment"># linreg = sklearn.linear_model.ElasticNet(alpha=0.114514, l1_ratio=0.5)</span></span><br><span class="line">linreg = sklearn.linear_model.LinearRegression()</span><br><span class="line">linreg.fit(X_train, y_train)</span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span>(linreg.coef_)</span><br><span class="line"><span class="built_in">print</span>(linreg.intercept_)</span><br><span class="line"></span><br><span class="line">y_test_reg = linreg.predict(X_test)</span><br><span class="line">y_train_reg = linreg.predict(X_train)</span><br><span class="line"></span><br><span class="line">accuracy_train = linreg.score(X_train, y_train)</span><br><span class="line">accuracy_test = linreg.score(X_test, y_test)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span>(<span class="string">&quot;Regression r^2 on training data: %f&quot;</span>%accuracy_train)</span><br><span class="line"><span class="built_in">print</span>(<span class="string">&quot;Regression r^2 on test data: %f&quot;</span>%accuracy_test)</span><br><span class="line"></span><br><span class="line">X_train, X_test, y_train, y_test = train_test_split(X, y_prime, stratify=X[<span class="string">&#x27;followers&#x27;</span>], random_state = <span class="number">2</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># linreg = sklearn.linear_model.Lasso(alpha=0.114514)</span></span><br><span class="line"><span class="comment"># linreg = sklearn.linear_model.ElasticNet(alpha=0.114514, l1_ratio=0.5)</span></span><br><span class="line">linreg_2 = sklearn.linear_model.LinearRegression()</span><br><span class="line">linreg_2.fit(X_train, y_train)</span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span>(linreg_2.coef_)</span><br><span class="line"><span class="built_in">print</span>(linreg_2.intercept_)</span><br><span class="line"></span><br><span class="line">y_test_reg = linreg_2.predict(X_test)</span><br><span class="line">y_train_reg = linreg_2.predict(X_train)</span><br><span class="line"></span><br><span class="line">accuracy_train = linreg_2.score(X_train, y_train)</span><br><span class="line">accuracy_test = linreg_2.score(X_test, y_test)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span>(<span class="string">&quot;Regression r^2 on training data: %f&quot;</span>%accuracy_train)</span><br><span class="line"><span class="built_in">print</span>(<span class="string">&quot;Regression r^2 on test data: %f&quot;</span>%accuracy_test)</span><br></pre></td></tr></table></figure>
+<pre><code>[-1.63048556e-04 -4.61383946e-01 -1.58369967e-01  1.42841418e+00]
+3.1673691472447825
+Regression r^2 on training data: 0.496148
+Regression r^2 on test data: 0.583907
+[ 2.62559317e-04 -3.05417414e-01 -8.41857302e-02  9.09382138e-01]
+4.756933767749846
+Regression r^2 on training data: 0.233466
+Regression r^2 on test data: 0.277448
+</code></pre><p>综上，模型告诉我们：</p>
+<script type="math/tex; mode=display">
+\log(\text{superchatIncome}) = {-0.000163048556}\text{timeDuration} - {0.461383946}\log(\text{followers}) - {0.158369967}\log(\text{watchCount}) + {1.42841418}\log(\text{interactionCount}) + 3.1673691472447825 \\
+\log(\text{membershipIncome}) = {0.000262559317}\text{timeDuration} - {0.305417414}\log(\text{followers}) - {0.0841857302}\log(\text{watchCount}) + {0.909382138}\log(\text{interactionCount}) + 4.756933767749846</script><p>而前者的 r 方大约在 0.55 左右，这比之前我们的预测要高多了。当然我们也不期望能得到一个十分厉害的公式，比较人类的行为不可预测。最后我们来算一算残差。</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">y_hat = linreg.predict(X)</span><br><span class="line">sns.displot(y - y_hat)</span><br><span class="line">plt.title(<span class="string">&quot;Residuals&quot;</span>)</span><br></pre></td></tr></table></figure>
+<img src="/2023/02/11/analysis/data-analysis-tutorial_56_0.png" class="">
+<p>嗯，看上去非常的正态分布，而且大致上围绕 $0$ 对称，这是一个很好的结果。这个模型给了我们一个思路，也就是互动人数相对来说更加重要，而观众数量和粉丝数量在某种意义上来说可能会有副作用。当然，如果我们去掉 <code>interactionCount</code> 和 <code>watchCount</code> ，那么这个模型会更加有意义。</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">X_2 = X.drop(<span class="string">&#x27;interactionCount&#x27;</span>, axis=<span class="number">1</span>).drop(<span class="string">&#x27;watchCount&#x27;</span>, axis=<span class="number">1</span>)</span><br><span class="line">X_2.head()</span><br></pre></td></tr></table></figure>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>timeDuration</th>
+      <th>followers</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>1</th>
+      <td>197.414133</td>
+      <td>10.451118</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>141.032567</td>
+      <td>10.451118</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>248.708783</td>
+      <td>10.451118</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>781.364767</td>
+      <td>10.451118</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>125.739050</td>
+      <td>10.451118</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+
+
+
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">X_train_2, X_test_2, y_train_2, y_test_2 = train_test_split(X_2, y, stratify=X[<span class="string">&#x27;followers&#x27;</span>], random_state = <span class="number">2</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># linreg = sklearn.linear_model.Lasso(alpha=0.114514)</span></span><br><span class="line"><span class="comment"># linreg = sklearn.linear_model.ElasticNet(alpha=0.114514, l1_ratio=0.5)</span></span><br><span class="line">linreg = sklearn.linear_model.LinearRegression()</span><br><span class="line">linreg.fit(X_train_2, y_train_2)</span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span>(linreg.coef_)</span><br><span class="line"><span class="built_in">print</span>(linreg.intercept_)</span><br><span class="line"></span><br><span class="line">y_test_reg = linreg.predict(X_test_2)</span><br><span class="line">y_train_reg = linreg.predict(X_train_2)</span><br><span class="line"></span><br><span class="line">accuracy_train_2 = linreg.score(X_train_2, y_train_2)</span><br><span class="line">accuracy_test_2 = linreg.score(X_test_2, y_test_2)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span>(<span class="string">&quot;Regression r^2 on training data: %f&quot;</span>%accuracy_train_2)</span><br><span class="line"><span class="built_in">print</span>(<span class="string">&quot;Regression r^2 on test data: %f&quot;</span>%accuracy_test_2)</span><br><span class="line"></span><br><span class="line">X_train_2, X_test_2, y_train_2, y_test_2 = train_test_split(X_2, y_prime, stratify=X[<span class="string">&#x27;followers&#x27;</span>], random_state = <span class="number">2</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># linreg = sklearn.linear_model.Lasso(alpha=0.114514)</span></span><br><span class="line"><span class="comment"># linreg = sklearn.linear_model.ElasticNet(alpha=0.114514, l1_ratio=0.5)</span></span><br><span class="line">linreg_2 = sklearn.linear_model.LinearRegression()</span><br><span class="line">linreg_2.fit(X_train_2, y_train_2)</span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span>(linreg_2.coef_)</span><br><span class="line"><span class="built_in">print</span>(linreg_2.intercept_)</span><br><span class="line"></span><br><span class="line">y_test_reg = linreg_2.predict(X_test_2)</span><br><span class="line">y_train_reg = linreg_2.predict(X_train_2)</span><br><span class="line"></span><br><span class="line">accuracy_train_2 = linreg_2.score(X_train_2, y_train_2)</span><br><span class="line">accuracy_test_2 = linreg_2.score(X_test_2, y_test_2)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span>(<span class="string">&quot;Regression r^2 on training data: %f&quot;</span>%accuracy_train_2)</span><br><span class="line"><span class="built_in">print</span>(<span class="string">&quot;Regression r^2 on test data: %f&quot;</span>%accuracy_test_2)</span><br></pre></td></tr></table></figure>
+<pre><code>[0.00242135 0.45857431]
+0.1472356138320805
+Regression r^2 on training data: 0.122934
+Regression r^2 on test data: 0.112910
+[0.00194852 0.29509566]
+2.8008611812800313
+Regression r^2 on training data: 0.064087
+Regression r^2 on test data: 0.052279
+</code></pre><figure class="highlight python"><table><tr><td class="code"><pre><span class="line">y_hat_2 = linreg.predict(X_2)</span><br><span class="line">sns.displot(y - y_hat_2)</span><br><span class="line">plt.title(<span class="string">&quot;Residuals&quot;</span>);</span><br></pre></td></tr></table></figure>
+<img src="/2023/02/11/analysis/data-analysis-tutorial_60_0.png" class="">
+<p>所以，模型说：</p>
+<script type="math/tex; mode=display">
+\log(\text{superchatIncome}) = {0.00242135}\text{timeDuration} + {0.45857431}\log(\text{followers}) + 0.1472356138320805 \\
+\log(\text{membershipIncome}) = {0.00194852}\text{timeDuration} + {0.29509566}\log(\text{followers}) + 2.8008611812800313</script><p>这就可以让主播根据自己的粉丝数量和想要直播的长度来估算自己的收入水平。</p>
+<h3 id="分类"><a href="#分类" class="headerlink" title="分类"></a>分类</h3><p>我们的目标是给出一段字符来判断这是属于哪个主播的直播间标题。根据上面的 cheatsheet ，我们可以使用 <code>naiveBayes</code> 方法。</p>
+<p>首先我们进行一个数据预处理，把所有的主播名称转换为 id ，这样方便模型训练。</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">ml_nb = df[[<span class="string">&#x27;liver&#x27;</span>, <span class="string">&#x27;title&#x27;</span>]]</span><br><span class="line">ml_nb[<span class="string">&#x27;liver_id&#x27;</span>] = ml_nb[<span class="string">&#x27;liver&#x27;</span>].factorize()[<span class="number">0</span>]</span><br><span class="line">liver_id_df = ml_nb[[<span class="string">&#x27;liver&#x27;</span>, <span class="string">&#x27;liver_id&#x27;</span>]].drop_duplicates().sort_values(<span class="string">&#x27;liver_id&#x27;</span>)</span><br><span class="line">liver_to_id = <span class="built_in">dict</span>(liver_id_df.values)</span><br><span class="line">id_to_liver = <span class="built_in">dict</span>(liver_id_df[[<span class="string">&#x27;liver_id&#x27;</span>, <span class="string">&#x27;liver&#x27;</span>]].values)</span><br><span class="line"></span><br><span class="line">ml_nb.sample(<span class="number">10</span>)</span><br></pre></td></tr></table></figure>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>liver</th>
+      <th>title</th>
+      <th>liver_id</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>299</th>
+      <td>九十九_Tsukumo</td>
+      <td>《好九不见》</td>
+      <td>5</td>
+    </tr>
+    <tr>
+      <th>1386</th>
+      <td>步玎Pudding</td>
+      <td>最期待的原神3.2主线</td>
+      <td>27</td>
+    </tr>
+    <tr>
+      <th>58</th>
+      <td>りんうらん霖雨蘭</td>
+      <td>【B限】英雄联盟手游K/DA！可爱qq！</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>1534</th>
+      <td>瑞娅_Rhea</td>
+      <td>稍微说一会就去睡觉</td>
+      <td>30</td>
+    </tr>
+    <tr>
+      <th>2036</th>
+      <td>茶冷_Channel</td>
+      <td>茶冷复播，答记者问</td>
+      <td>41</td>
+    </tr>
+    <tr>
+      <th>2132</th>
+      <td>路希维德Wiede</td>
+      <td>元宵快乐</td>
+      <td>43</td>
+    </tr>
+    <tr>
+      <th>169</th>
+      <td>东爱璃Lovely</td>
+      <td>出道1000天啦！</td>
+      <td>3</td>
+    </tr>
+    <tr>
+      <th>1746</th>
+      <td>红晓音Akane</td>
+      <td>【环】突击初代艾尔登之王！</td>
+      <td>35</td>
+    </tr>
+    <tr>
+      <th>2065</th>
+      <td>茶冷_Channel</td>
+      <td>3D化后日谈+沉浸式低音谢礼物</td>
+      <td>41</td>
+    </tr>
+    <tr>
+      <th>566</th>
+      <td>可妮Koni_Official</td>
+      <td>睡眠导入原神~</td>
+      <td>11</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+
+
+<p>然后我们就需要对中文进行一些预处理工作，删掉文本中的标点符号和特殊符号，由于这里只是标题，所以我们觉得不需要去除停用词。最后我们使用 <code>jieba</code> 库进行分词。</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> re</span><br><span class="line"><span class="keyword">import</span> jieba <span class="keyword">as</span> jb</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">remove_punctuations</span>(<span class="params">text</span>):</span></span><br><span class="line">    line = <span class="built_in">str</span>(text)</span><br><span class="line">    <span class="keyword">if</span> line.strip() == <span class="string">&#x27;&#x27;</span>:</span><br><span class="line">        <span class="keyword">return</span> <span class="string">&#x27;&#x27;</span></span><br><span class="line">    rule = re.<span class="built_in">compile</span>(<span class="string">u&quot;[^a-zA-Z0-9\u4E00-\u9FA5]&quot;</span>)</span><br><span class="line">    line = rule.sub(<span class="string">&#x27;&#x27;</span>,line)</span><br><span class="line">    <span class="keyword">return</span> line</span><br><span class="line"></span><br><span class="line">ml_nb[<span class="string">&#x27;clean_title&#x27;</span>] = ml_nb[<span class="string">&#x27;title&#x27;</span>].apply(remove_punctuations)</span><br><span class="line">ml_nb[<span class="string">&#x27;cut_title&#x27;</span>] = ml_nb[<span class="string">&#x27;clean_title&#x27;</span>].apply(<span class="keyword">lambda</span> x: <span class="string">&#x27; &#x27;</span>.join(jb.cut(x)))</span><br><span class="line">ml_nb.sample(<span class="number">10</span>)</span><br></pre></td></tr></table></figure>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>liver</th>
+      <th>title</th>
+      <th>liver_id</th>
+      <th>clean_title</th>
+      <th>cut_title</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>2331</th>
+      <td>雪绘Yukie</td>
+      <td>一起来看游戏王GX！！</td>
+      <td>47</td>
+      <td>一起来看游戏王GX</td>
+      <td>一起 来看 游戏王 GX</td>
+    </tr>
+    <tr>
+      <th>2136</th>
+      <td>路希维德Wiede</td>
+      <td>密码？那是什么？？</td>
+      <td>43</td>
+      <td>密码那是什么</td>
+      <td>密码 那 是 什么</td>
+    </tr>
+    <tr>
+      <th>730</th>
+      <td>奈姬Niki</td>
+      <td>来一把</td>
+      <td>14</td>
+      <td>来一把</td>
+      <td>来 一把</td>
+    </tr>
+    <tr>
+      <th>1588</th>
+      <td>病院坂Rei</td>
+      <td>【歌杂】小幽灵唱歌喽！</td>
+      <td>31</td>
+      <td>歌杂小幽灵唱歌喽</td>
+      <td>歌杂 小 幽灵 唱歌 喽</td>
+    </tr>
+    <tr>
+      <th>1681</th>
+      <td>眞白花音_Official</td>
+      <td>【B限】圣诞节做料理直播</td>
+      <td>33</td>
+      <td>B限圣诞节做料理直播</td>
+      <td>B 限 圣诞节 做 料理 直播</td>
+    </tr>
+    <tr>
+      <th>289</th>
+      <td>九十九_Tsukumo</td>
+      <td>《整理房间unpacking》</td>
+      <td>5</td>
+      <td>整理房间unpacking</td>
+      <td>整理 房间 unpacking</td>
+    </tr>
+    <tr>
+      <th>1271</th>
+      <td>李豆沙_Channel</td>
+      <td>歌杂并水友连麦</td>
+      <td>25</td>
+      <td>歌杂并水友连麦</td>
+      <td>歌杂 并 水友 连麦</td>
+    </tr>
+    <tr>
+      <th>2052</th>
+      <td>茶冷_Channel</td>
+      <td>【工作音杂谈】安定的周日夜晚</td>
+      <td>41</td>
+      <td>工作音杂谈安定的周日夜晚</td>
+      <td>工作 音 杂谈 安定 的 周日 夜晚</td>
+    </tr>
+    <tr>
+      <th>1049</th>
+      <td>折原露露</td>
+      <td>我到家啦！！冲一下五十万关注！</td>
+      <td>21</td>
+      <td>我到家啦冲一下五十万关注</td>
+      <td>我 到 家 啦 冲 一下 五十万 关注</td>
+    </tr>
+    <tr>
+      <th>116</th>
+      <td>七海Nana7mi</td>
+      <td>玩空之要塞：启航！</td>
+      <td>2</td>
+      <td>玩空之要塞启航</td>
+      <td>玩空 之 要塞 启航</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+
+
+<p>emmm…虽然看上去效果一般般，有一些连在一起的词语也被切开了，不过要啥自行车。接下来我们需要计算一下 TF-IDF 矩阵，然后就可以训练模型了。</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> sklearn.feature_extraction.text <span class="keyword">import</span> TfidfVectorizer</span><br><span class="line"></span><br><span class="line">tfidf = TfidfVectorizer(norm=<span class="string">&#x27;l2&#x27;</span>, encoding=<span class="string">&#x27;utf-8&#x27;</span>, ngram_range=(<span class="number">1</span>, <span class="number">2</span>))</span><br><span class="line">features = tfidf.fit_transform(ml_nb.cut_title)</span><br><span class="line">labels = ml_nb.liver_id</span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span>(features.shape)</span><br><span class="line"><span class="built_in">print</span>(features)</span><br></pre></td></tr></table></figure>
+<pre><code>(2477, 5043)
+  (0, 4078)    0.3867751769048678
+  (0, 2723)    0.3867751769048678
+  (0, 698)    0.4070981099498189
+  (0, 770)    0.3867751769048678
+  (0, 4076)    0.3520328933911443
+  (0, 2721)    0.3095641893240464
+  (0, 697)    0.4070981099498189
+  (1, 4554)    0.407098109949819
+  (1, 4553)    0.407098109949819
+  (1, 4078)    0.38677517690486785
+  (1, 2723)    0.38677517690486785
+  (1, 770)    0.38677517690486785
+  (1, 4076)    0.35203289339114435
+  (1, 2721)    0.30956418932404645
+  (2, 3042)    0.6414193873794413
+  (2, 497)    0.5424855617865706
+  (2, 3041)    0.5424855617865706
+  (3, 3383)    1.0
+  (4, 1218)    0.48709901556647317
+  (4, 297)    0.48709901556647317
+  (4, 533)    0.40395968534382953
+  (4, 1217)    0.4627823203088134
+  (4, 296)    0.3848612668155245
+  (5, 3650)    0.6518999645492638
+  (5, 1726)    0.3873665866351113
+  :    :
+  (2468, 3669)    0.3454638440279449
+  (2468, 3667)    0.6909276880558898
+  (2468, 201)    0.31598150913221407
+  (2468, 2204)    0.2544382305640776
+  (2469, 3645)    0.44721359549995787
+  (2469, 4159)    0.44721359549995787
+  (2469, 274)    0.44721359549995787
+  (2469, 3644)    0.44721359549995787
+  (2469, 4158)    0.44721359549995787
+  (2470, 1118)    1.0
+  (2471, 5008)    1.0
+  (2472, 1502)    0.4786206467054956
+  (2472, 28)    0.4786206467054956
+  (2472, 1501)    0.4786206467054956
+  (2472, 2506)    0.42462502625312665
+  (2472, 27)    0.3639511185876078
+  (2473, 3280)    0.5773502691896257
+  (2473, 3278)    0.5773502691896257
+  (2473, 3279)    0.5773502691896257
+  (2474, 1777)    0.5773502691896257
+  (2474, 4292)    0.5773502691896257
+  (2474, 1776)    0.5773502691896257
+  (2475, 1777)    0.5773502691896257
+  (2475, 4292)    0.5773502691896257
+  (2475, 1776)    0.5773502691896257
+</code></pre><p>这里 <code>feature</code> 的形状是 <code>(2477, 5043)</code> ，前者表示标题数量，后者表示所有词语数 + 词语对的数量。然后我们就可以用朴素贝叶斯分类来计算啦。</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> sklearn.model_selection <span class="keyword">import</span> train_test_split</span><br><span class="line"><span class="keyword">from</span> sklearn.feature_extraction.text <span class="keyword">import</span> CountVectorizer, TfidfTransformer</span><br><span class="line"><span class="keyword">from</span> sklearn.naive_bayes <span class="keyword">import</span> MultinomialNB</span><br><span class="line"></span><br><span class="line">X_train, X_test, y_train, y_test = train_test_split(ml_nb[<span class="string">&#x27;cut_title&#x27;</span>], ml_nb[<span class="string">&#x27;liver_id&#x27;</span>], random_state=<span class="number">0</span>)</span><br><span class="line">count_vect = CountVectorizer()</span><br><span class="line">X_train_counts = count_vect.fit_transform(X_train)</span><br><span class="line"></span><br><span class="line">tfidf_transformer = TfidfTransformer()</span><br><span class="line">X_train_tfidf = tfidf_transformer.fit_transform(X_train_counts)</span><br><span class="line"></span><br><span class="line">clf = MultinomialNB().fit(X_train_tfidf, y_train)</span><br></pre></td></tr></table></figure>
+<p>训练完成后，我们就可以让它来预测一下了。我们编写一个预测函数。</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">predict_liver</span>(<span class="params">text</span>):</span></span><br><span class="line">    text = remove_punctuations(text)</span><br><span class="line">    text = <span class="string">&#x27; &#x27;</span>.join(jb.cut(text))</span><br><span class="line">    <span class="keyword">return</span> id_to_liver[clf.predict(count_vect.transform([text]))[<span class="number">0</span>]]</span><br></pre></td></tr></table></figure>
+<p>我们以现在正在直播的主播来测试一下。</p>
+<img src="/2023/02/11/analysis/%E5%8B%BA.png" class="">
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">predict_liver(<span class="string">&#x27;收留失眠小狗 U・ェ・U&#x27;</span>)</span><br></pre></td></tr></table></figure>
+<pre><code>&#39;勺Shaun&#39;
+</code></pre><h2 id="未来展望"><a href="#未来展望" class="headerlink" title="未来展望"></a>未来展望</h2><p>其实我们还可以继续做一些工作，比如说：</p>
+<ul>
+<li>在一周中不同的日子，直播的时长和收入会有什么变化？这和我们已经完成的分析有一定的关系，但是需要收集不同的数据。</li>
+<li>关于一个 sc 的价格和大航海的类型与其他因素的关系，比如说直播时长，观众数量，粉丝数量等等。</li>
+<li>特殊的直播（例如生日会/周年直播/耐久直播）和普通直播的收入差异。当然这就需要对数据手动进行分类了。</li>
+</ul>
+<h2 id="附录：数据集中包含的虚拟主播名单"><a href="#附录：数据集中包含的虚拟主播名单" class="headerlink" title="附录：数据集中包含的虚拟主播名单"></a>附录：数据集中包含的虚拟主播名单</h2><p>点击用户 id 即可跳转到其 bilibili 空间。直播数据截至 2023 年 2 月 9 日。</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>名称</th>
+<th>所属</th>
+<th>用户id</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>七海Nana7mi</td>
+<td>vr</td>
+<td><a href="https://space.bilibili.com/434334701">434334701</a></td>
+</tr>
+<tr>
+<td>中单光一</td>
+<td>vr</td>
+<td><a href="https://space.bilibili.com/434401868">434401868</a></td>
+</tr>
+<tr>
+<td>内德维德</td>
+<td>independent</td>
+<td><a href="https://space.bilibili.com/90873">90873</a></td>
+</tr>
+<tr>
+<td>弥希Miki</td>
+<td>vr</td>
+<td><a href="https://space.bilibili.com/477317922">477317922</a></td>
+</tr>
+<tr>
+<td>星弥Hoshimi</td>
+<td>vr</td>
+<td><a href="https://space.bilibili.com/477342747">477342747</a></td>
+</tr>
+<tr>
+<td>真绯瑠mahiru</td>
+<td>vr</td>
+<td><a href="https://space.bilibili.com/477306079">477306079</a></td>
+</tr>
+<tr>
+<td>阿萨Aza</td>
+<td>vr</td>
+<td><a href="https://space.bilibili.com/480680646">480680646</a></td>
+</tr>
+<tr>
+<td>雪绘Yukie</td>
+<td>vr</td>
+<td><a href="https://space.bilibili.com/56748733">56748733</a></td>
+</tr>
+<tr>
+<td>千春_Chiharu</td>
+<td>vr</td>
+<td><a href="https://space.bilibili.com/558070433">558070433</a></td>
+</tr>
+<tr>
+<td>悠亚Yua</td>
+<td>vr</td>
+<td><a href="https://space.bilibili.com/666726799">666726799</a></td>
+</tr>
+<tr>
+<td>勺Shaun</td>
+<td>vr</td>
+<td><a href="https://space.bilibili.com/666726801">666726801</a></td>
+</tr>
+<tr>
+<td>勾檀Mayumi</td>
+<td>vr</td>
+<td><a href="https://space.bilibili.com/690608693">690608693</a></td>
+</tr>
+<tr>
+<td>九十九_Tsukumo</td>
+<td>vr</td>
+<td><a href="https://space.bilibili.com/690608702">690608702</a></td>
+</tr>
+<tr>
+<td>瑞娅_Rhea</td>
+<td>vr</td>
+<td><a href="https://space.bilibili.com/690608698">690608698</a></td>
+</tr>
+<tr>
+<td>恋诗夜Koxia</td>
+<td>vr</td>
+<td><a href="https://space.bilibili.com/690608690">690608690</a></td>
+</tr>
+<tr>
+<td>雾深Girimi</td>
+<td>vr</td>
+<td><a href="https://space.bilibili.com/1484169431">1484169431</a></td>
+</tr>
+<tr>
+<td>茶冷_Channel</td>
+<td>vr</td>
+<td><a href="https://space.bilibili.com/741520">741520</a></td>
+</tr>
+<tr>
+<td>阿梓从小就很可爱</td>
+<td>vr</td>
+<td><a href="https://space.bilibili.com/7706705">7706705</a></td>
+</tr>
+<tr>
+<td>小可学妹</td>
+<td>vr</td>
+<td><a href="https://space.bilibili.com/14387072">14387072</a></td>
+</tr>
+<tr>
+<td>诺莺Nox</td>
+<td>vr</td>
+<td><a href="https://space.bilibili.com/529249">529249</a></td>
+</tr>
+<tr>
+<td>红晓音Akane</td>
+<td>psp</td>
+<td><a href="https://space.bilibili.com/899804">899804</a></td>
+</tr>
+<tr>
+<td>东爱璃Lovely</td>
+<td>psp</td>
+<td><a href="https://space.bilibili.com/3821157">3821157</a></td>
+</tr>
+<tr>
+<td>李豆沙_Channel</td>
+<td>psp</td>
+<td><a href="https://space.bilibili.com/1703797642">1703797642</a></td>
+</tr>
+<tr>
+<td>白神遥Haruka</td>
+<td>psp</td>
+<td><a href="https://space.bilibili.com/477332594">477332594</a></td>
+</tr>
+<tr>
+<td>病院坂Rei</td>
+<td>psp</td>
+<td><a href="https://space.bilibili.com/1041474702">1041474702</a></td>
+</tr>
+<tr>
+<td>夏诺雅_shanoa</td>
+<td>independent</td>
+<td><a href="https://space.bilibili.com/1612112">1612112</a></td>
+</tr>
+<tr>
+<td>雫るる_Official</td>
+<td>independent</td>
+<td><a href="https://space.bilibili.com/387636363">387636363</a></td>
+</tr>
+<tr>
+<td>明前奶绿</td>
+<td>independent</td>
+<td><a href="https://space.bilibili.com/2132180406">2132180406</a></td>
+</tr>
+<tr>
+<td>九重紫Official</td>
+<td>independent</td>
+<td><a href="https://space.bilibili.com/225347042">225347042</a></td>
+</tr>
+<tr>
+<td>-阿蕊娅Aria-</td>
+<td>independent</td>
+<td><a href="https://space.bilibili.com/10850238">10850238</a></td>
+</tr>
+<tr>
+<td>步玎Pudding</td>
+<td>independent</td>
+<td><a href="https://space.bilibili.com/416622817">416622817</a></td>
+</tr>
+<tr>
+<td>烛灵儿Hikari</td>
+<td>independent</td>
+<td><a href="https://space.bilibili.com/399815233">399815233</a></td>
+</tr>
+<tr>
+<td>胡桃Usa</td>
+<td>providence</td>
+<td><a href="https://space.bilibili.com/12497617">12497617</a></td>
+</tr>
+<tr>
+<td>花花Haya</td>
+<td>providence</td>
+<td><a href="https://space.bilibili.com/269415357">269415357</a></td>
+</tr>
+<tr>
+<td>路希维德Wiede</td>
+<td>meta-mythos</td>
+<td><a href="https://space.bilibili.com/2006452883">2006452883</a></td>
+</tr>
+<tr>
+<td>美月もも</td>
+<td>independent</td>
+<td><a href="https://space.bilibili.com/2073012767">2073012767</a></td>
+</tr>
+<tr>
+<td>早稻叽</td>
+<td>chaoslive</td>
+<td><a href="https://space.bilibili.com/1950658">1950658</a></td>
+</tr>
+<tr>
+<td>尼奈nine_Official</td>
+<td>independent</td>
+<td><a href="https://space.bilibili.com/163653">163653</a></td>
+</tr>
+<tr>
+<td>陆鳐LuLu</td>
+<td>independent</td>
+<td><a href="https://space.bilibili.com/1856528671">1856528671</a></td>
+</tr>
+<tr>
+<td>罗菈Rola</td>
+<td>another-project</td>
+<td><a href="https://space.bilibili.com/2052064438">2052064438</a></td>
+</tr>
+<tr>
+<td>奈姬Niki</td>
+<td>another-project</td>
+<td><a href="https://space.bilibili.com/3035105">3035105</a></td>
+</tr>
+<tr>
+<td>折原露露</td>
+<td>independent</td>
+<td><a href="https://space.bilibili.com/631070414">631070414</a></td>
+</tr>
+<tr>
+<td>可妮Koni_Official</td>
+<td>independent</td>
+<td><a href="https://space.bilibili.com/1372936974">1372936974</a></td>
+</tr>
+<tr>
+<td>眞白花音_Official</td>
+<td>chucolala</td>
+<td><a href="https://space.bilibili.com/401480763">401480763</a></td>
+</tr>
+<tr>
+<td>奈奈莉娅Channel</td>
+<td>independent</td>
+<td><a href="https://space.bilibili.com/489146840">489146840</a></td>
+</tr>
+<tr>
+<td>小柔Channel</td>
+<td>虚研社</td>
+<td><a href="https://space.bilibili.com/1734978373">1734978373</a></td>
+</tr>
+<tr>
+<td>艾露露Ailurus</td>
+<td>虚研社</td>
+<td><a href="https://space.bilibili.com/1501380958">1501380958</a></td>
+</tr>
+<tr>
+<td>りんうらん霖雨蘭</td>
+<td>independent</td>
+<td><a href="https://space.bilibili.com/34815578">34815578</a></td>
+</tr>
+<tr>
+<td>永雏塔菲</td>
+<td>independent</td>
+<td><a href="https://space.bilibili.com/1265680561">1265680561</a></td>
+</tr>
+<tr>
+<td>東雪蓮Official</td>
+<td>independent</td>
+<td><a href="https://space.bilibili.com/1437582453">1437582453</a></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>别问为什么内德维德会夹在一群 vr 主播中，问就是某个龙神的数据不知为何无法抓取临时换的。</p>
+]]></content>
+      <tags>
+        <tag>灵感</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>在墙上写诗的人</title>
     <url>/2022/12/16/%E5%9C%A8%E5%A2%99%E4%B8%8A%E5%86%99%E8%AF%97%E7%9A%84%E4%BA%BA/</url>
     <content><![CDATA[<p>町は開かれた書物である、書くべき余白が無限にある。 ——寺山修司</p>
