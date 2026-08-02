@@ -17,6 +17,108 @@
       </tags>
   </entry>
   <entry>
+    <title>我把四个 AI 编程 CLI 装进了一块 128×64 的 OLED</title>
+    <url>/2026/08/02/%E6%88%91%E6%8A%8A%E5%9B%9B%E4%B8%AAAI%E7%BC%96%E7%A8%8BCLI%E8%A3%85%E8%BF%9B%E4%BA%86%E4%B8%80%E5%9D%97128%C3%9764%E7%9A%84OLED/</url>
+    <content><![CDATA[<h1 id="我把四个-AI-编程-CLI-装进了一块-128×64-的-OLED"><a href="#我把四个-AI-编程-CLI-装进了一块-128×64-的-OLED" class="headerlink" title="我把四个 AI 编程 CLI 装进了一块 128×64 的 OLED"></a>我把四个 AI 编程 CLI 装进了一块 128×64 的 OLED</h1><!--
+备选标题：
+1. AgentDeck：给四个 AI 编程 Agent 做一块桌面仪表盘
+2. 四个按钮、128×64 像素，以及四种完全不同的 Agent 协议
+3. 我不想再切终端了，所以做了一个 AI Agent 硬件控制台
+-->
+<p>最近由于入职了新公司离开了游戏行业所以咕咕掉了之前的 Rust 光追的文档，已经是游戏叛忍了，所以那个项目会不会继续把博客写下去仍未可知，或许在某个空闲的午后我会把这件事情重新拾起来。</p>
+<p>在新的公司里我的工作大概就是一个 AI 产品经理，把所有的需求交给 AI 然后进行不断的迭代验证。这就涉及到了一个多 Agent 管理的问题了，同时公司由于拥有无限量的 Copilot，所以我把其中的 gpt 代理出来到 Codex，Calude 代理出来到 CC，在又一次漏掉某个 Questionnaire 之后，我想出来了一个全新的项目。</p>
+<p>我真正想解决的不是“如何把 AI 对话搬到另一块屏幕”，而是一个更窄的问题：当多个 coding agent 同时工作时，我怎样用一眼就能扫完的方式知道谁在运行、谁已经结束、谁在等我，以及下一步应该去哪个终端？</p>
+<p>于是有了 AgentDeck：一块 128×64 的 OLED、四个按钮和一块 RP2040 Zero。它监控 Claude Code、Codex、GitHub Copilot CLI 和 OpenCode，把多个原生 CLI 会话放进一个固定的 tmux/psmux workspace，并提供少量刻意受限的控制。</p>
+<img src="/2026/08/02/%E6%88%91%E6%8A%8A%E5%9B%9B%E4%B8%AAAI%E7%BC%96%E7%A8%8BCLI%E8%A3%85%E8%BF%9B%E4%BA%86%E4%B8%80%E5%9D%97128%C3%9764%E7%9A%84OLED/20260801_145912.jpg" class="" title="rp2040 zero">
+<img src="/2026/08/02/%E6%88%91%E6%8A%8A%E5%9B%9B%E4%B8%AAAI%E7%BC%96%E7%A8%8BCLI%E8%A3%85%E8%BF%9B%E4%BA%86%E4%B8%80%E5%9D%97128%C3%9764%E7%9A%84OLED/20260801_145924.jpg" class="" title="small 12864 OLED">
+<img src="/2026/08/02/%E6%88%91%E6%8A%8A%E5%9B%9B%E4%B8%AAAI%E7%BC%96%E7%A8%8BCLI%E8%A3%85%E8%BF%9B%E4%BA%86%E4%B8%80%E5%9D%97128%C3%9764%E7%9A%84OLED/20260801_145854.jpg" class="" title="四个按键，本来想自己画 PCB 焊的，结果发现居然有成品可以直接买">
+<h2 id="它不是什么"><a href="#它不是什么" class="headerlink" title="它不是什么"></a>它不是什么</h2><p>我一开始就给这个项目划了一条边界：AgentDeck 不是迷你聊天客户端，也不是把终端 UI 缩小后塞进 OLED。</p>
+<p>它不会显示 prompt、回答、命令参数、文件内容、问题选项、permission payload 或 assistant 正文。真正需要阅读和决策的内容仍然留在 provider 自己的终端里。OLED 只显示适合快速扫视的结构化信息：会话身份、状态、活动类型、token、耗时、原生成本、模型，以及可归因的代码变更统计。</p>
+<p>这个边界同时解决了三个问题：</p>
+<ol>
+<li>128×64 像素根本不适合阅读长内容。</li>
+<li>问题和审批需要完整上下文，不应该在四个按钮上盲答。</li>
+<li>Bridge 和 OLED 不携带对话正文，降低了泄露私密内容的风险。</li>
+</ol>
+<p>因此，AgentDeck 的定位更接近“注意力外设”：它告诉我哪里值得看，但不替我做需要语境的决定。</p>
+<h2 id="最终界面只有六行"><a href="#最终界面只有六行" class="headerlink" title="最终界面只有六行"></a>最终界面只有六行</h2><p>HOME 页最多显示六行：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">OPENCODE 1 session title</span><br><span class="line">RUNNING · Bash</span><br><span class="line">IN 25.4k OUT 5.5k</span><br><span class="line">4m53s $6.96</span><br><span class="line">F3 +120 -20</span><br><span class="line">gpt-5.6-sol</span><br></pre></td></tr></table></figure>
+<p>包括了 CLI 的名称和 Session 的名称，Session 的状态，输入输出的 Token 数量，运行时间 + 开销，修改的文件和代码行数量，以及正在使用的模型。</p>
+<h2 id="配上四个按钮"><a href="#配上四个按钮" class="headerlink" title="配上四个按钮"></a>配上四个按钮</h2><p>四个物理按钮采用 Z 形摆放，但逻辑保持 N 形顺序，这是因为在等待硬件送到的过程中先行架设了 N 形排列而开始了原型开发，但是拿到手却发现是 Z 形的，于是就只能妥协了：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">A / Button 1    B / Button 3</span><br><span class="line">C / Button 2    D / Button 4</span><br></pre></td></tr></table></figure>
+<p>在 HOME 页，它们分别用于切换上一个会话、切换下一个会话、打开 Actions，以及 Continue。长按 B4 只中断当前 turn，不关闭会话。</p>
+<p>Actions 包含 Focus、New、Resume 和 Close。New 会依次选择 provider、workspace 和 SAFE/AUTO 模式；Resume 会选择 provider、历史会话和模式。AUTO 默认禁用，即使启用也会再出现一次明确的危险模式确认。</p>
+<p>Alert 页则把 B3 和 B4 固定为 Focus 与 Ignore。Focus 切到原生终端，Ignore 只隐藏当前告警事件。真正的问题回答和权限审批仍然必须在 CLI 中完成。完成提醒优先级最低，ERROR、NEEDS APPROVAL 和 NEEDS INPUT 永远排在它前面。</p>
+<h2 id="软件架构：硬件只是最外面一层"><a href="#软件架构：硬件只是最外面一层" class="headerlink" title="软件架构：硬件只是最外面一层"></a>软件架构：硬件只是最外面一层</h2><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">RP2040 hardware -&gt; daemon device worker ---+</span><br><span class="line">                                            v</span><br><span class="line">OLED simulator -&gt; authenticated Bridge -&gt; AgentDeck daemon</span><br><span class="line">                                            |</span><br><span class="line">                                            v</span><br><span class="line">                         session coordinator -&gt; provider observations</span><br><span class="line">                                            |  (public API/event first,</span><br><span class="line">                                            |   local store fallback)</span><br><span class="line">                                            v</span><br><span class="line">one tmux/psmux session: agentdeck</span><br><span class="line">  window 0: daemon supervisor</span><br><span class="line">  window 1+: one native CLI instance per window</span><br></pre></td></tr></table></figure>
+<p>Daemon 是单一协调者，负责会话 registry、当前选择、告警、生命周期和控制。每个 provider CLI 独占一个 tmux/psmux window。Supervisor 只负责在 daemon 退出后按上限退避重启它，daemon 本身不会递归创建 workspace。</p>
+<p>RP2040 通过 USB serial 发送四种物理事件，并接收 host 生成的 frame。Bridge 是 loopback-only、带 token 的 newline-delimited JSON 协议，只接受 <code>status</code>、<code>press</code>、<code>button_down</code> 和 <code>button_up</code>。它不会接受“直接关闭某个会话”之类的语义命令。</p>
+<p>这套分层也让桌面模拟器和真实硬件共用同一份显示状态。我可以先在 Tk 模拟器中验证 viewport、按钮和字体，再把完全相同的 frame 发给 RP2040。</p>
+<h2 id="最难的部分不是焊接，而是四个-provider-都不一样"><a href="#最难的部分不是焊接，而是四个-provider-都不一样" class="headerlink" title="最难的部分不是焊接，而是四个 provider 都不一样"></a>最难的部分不是焊接，而是四个 provider 都不一样</h2><p>四个 CLI 没有统一的 telemetry 或 control protocol。AgentDeck 只能为每个 provider 选择最可靠的证据，并在证据缺失时明确降级，而不是猜。</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>Provider</th>
+<th>当前证据来源</th>
+<th>控制能力与限制</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Claude Code</td>
+<td>PID 关联的增量 JSONL transcript</td>
+<td>可在状态被证明安全时使用受限 tmux fallback</td>
+</tr>
+<tr>
+<td>Codex</td>
+<td>只读 thread catalog 与增量 rollout JSONL</td>
+<td>未协商 app-server 时只使用受限 fallback</td>
+</tr>
+<tr>
+<td>Copilot CLI</td>
+<td>workspace metadata 与增量 event store</td>
+<td>没有协商 SDK control 时不假装支持结构化控制</td>
+</tr>
+<tr>
+<td>OpenCode</td>
+<td>loopback HTTP API 与只读 SQLite metadata</td>
+<td>可使用文档化的 TUI/session route Continue、Queue 和 Interrupt</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>这里有一个重要原则：<strong>字段不存在不等于零，接口不支持不等于失败。</strong> OLED 会折叠不支持的指标；如果文件数已知但增删行未知，则显示 <code>F1 +? -?</code>，而不是伪造 <code>+0 -0</code>。</p>
+<h2 id="128×64-像素的限制"><a href="#128×64-像素的限制" class="headerlink" title="128×64 像素的限制"></a>128×64 像素的限制</h2><p>OLED 左侧只有 104 像素可用于内容，右侧留给四个按钮。最初直接使用 MicroPython 内置字体，但它无法处理中文标题，ASCII 也很难在混合文本中稳定排版。</p>
+<p>现在所有文本都由 host 使用 Fusion Bold Pixel 10px 栅格化为 104×9 位图，固件只负责把位图画到 OLED。状态、token、告警和按钮图标则由固件用像素与线段绘制。这样既能显示中文 session title，又能让图标保持清晰。</p>
+<h2 id="硬件上的几个坑"><a href="#硬件上的几个坑" class="headerlink" title="硬件上的几个坑"></a>硬件上的几个坑</h2><h3 id="1-按键不是轮询一下就结束了"><a href="#1-按键不是轮询一下就结束了" class="headerlink" title="1. 按键不是轮询一下就结束了"></a>1. 按键不是轮询一下就结束了</h3><p>早期按键处理会出现重复 button-down 和丢边沿。最终固件使用 GPIO 双边沿中断记录候选状态，在主循环中做稳定消抖，并通过固定大小的事件环形队列发送 down/up。IRQ 中只做最少的状态记录，JSON 输出留在主循环。</p>
+<h3 id="2-mpremote-exec-会打断正在运行的固件"><a href="#2-mpremote-exec-会打断正在运行的固件" class="headerlink" title="2. mpremote exec 会打断正在运行的固件"></a>2. <code>mpremote exec</code> 会打断正在运行的固件</h3><p>曾经出现过 COM 可以打开、OLED 却一直停在 <code>USB WAIT</code> 的情况。原因不是接线，而是 <code>mpremote exec</code> 用 Ctrl+C 打断了 <code>main.py</code> 并留在 REPL。之后的 host 虽然成功占用了串口，却没有固件主循环消费 frame。</p>
+<p>解决方法是执行 reset，然后不要再用 <code>mpremote exec</code> 验证版本；版本应从固件的 <code>ready</code> 消息和 daemon 日志确认。</p>
+<h3 id="3-动画刷新不能重画整块屏幕"><a href="#3-动画刷新不能重画整块屏幕" class="headerlink" title="3. 动画刷新不能重画整块屏幕"></a>3. 动画刷新不能重画整块屏幕</h3><p>State Rail 最初每 160ms 重画整屏，RUNNING 文本又每 500ms 闪烁一次，两个动画会互相阻塞，看起来忽快忽慢。最终固件只更新受影响的 SSD1306 page：状态行覆盖 page 1/2，State Rail 位于 page 7。两个相位都根据绝对时间计算，偶发阻塞后直接追到正确位置，而不是改变长期速度。</p>
+<h2 id="远端-Linux-与本地硬件"><a href="#远端-Linux-与本地硬件" class="headerlink" title="远端 Linux 与本地硬件"></a>远端 Linux 与本地硬件</h2><p>AgentDeck 曾经支持 <code>host.transport = &quot;ssh&quot;</code>，后来我把它删掉了。只把 tmux 命令转发到远端无法正确获得远端 provider 的状态文件、API 和进程证据。</p>
+<p>正确拓扑是：daemon、tmux workspace 和四个 provider 都运行在远端 Linux；本地只通过 SSH 把远端 loopback Bridge 转发回来，再由本机 hardware client 驱动 COM 口上的 RP2040。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">remote providers + tmux + daemon</span><br><span class="line">              127.0.0.1:8765</span><br><span class="line">                      |</span><br><span class="line">                  SSH tunnel</span><br><span class="line">                      |</span><br><span class="line">              127.0.0.1:18765</span><br><span class="line">                      |</span><br><span class="line">local hardware client -&gt; COM5 -&gt; RP2040</span><br></pre></td></tr></table></figure>
+<p>这种方式让 provider evidence 留在它实际产生的机器上，同时 Bridge 仍然不暴露到公网。</p>
+<h2 id="哪些设计决定是刻意保守的"><a href="#哪些设计决定是刻意保守的" class="headerlink" title="哪些设计决定是刻意保守的"></a>哪些设计决定是刻意保守的</h2><ol>
+<li>不显示对话正文。</li>
+<li>不在四个按钮上回答问题或批准权限。</li>
+<li>不估算 provider 没有提供的成本或 token。</li>
+<li>不把未知值写成零。</li>
+<li>不把 Bash 或外部修改伪装成 agent 的结构化代码变更。</li>
+<li>不在缺少 capability negotiation 时猜测控制协议。</li>
+<li>不为了填满 OLED 而保留低价值指标。</li>
+</ol>
+<p>这些限制让功能表看起来短了一些，但它们也是我愿意把 AgentDeck 长期开在桌面上的原因。</p>
+<h2 id="如何运行"><a href="#如何运行" class="headerlink" title="如何运行"></a>如何运行</h2><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">uv sync --extra dev</span><br><span class="line">cp config.example.toml config.toml</span><br><span class="line">uv run agentdeck --config config.toml launch</span><br><span class="line">tmux attach -t agentdeck</span><br></pre></td></tr></table></figure>
+<p>RP2040 使用 MicroPython，OLED SDA/SCL 接 GP0/GP1，四个 active-low 按钮接 GP2～GP5。具体安装、配置和安全注意事项见项目 README。</p>
+<h2 id="结尾"><a href="#结尾" class="headerlink" title="结尾"></a>结尾</h2><p>目前整个项目还是一个比较粗糙的原型，所有电器元件都还只是散落在桌面上，或许之后我也应该设计一个外壳把他们真正组装成一个实体。以及或许着整个项目也不应该只是一个和硬件相关的东西，它也可以作为一个桌面监控软件出现在电脑屏幕当中。</p>
+<p>不过我的工作流确实发生了变化，我现在可以同时监控五六个 Session，以及在每个 Session 如果出现消息提示，我可以一键切换过去并进行操作。</p>
+<p>AgentDeck 最终没有让我少用终端。它做的是另一件事：让我只在终端真正需要我的时候回去。</p>
+]]></content>
+      <tags>
+        <tag>灵感</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>Rethinking of &quot;从 Rust 开始的 Vulkan Ray Tracing&quot;（一）</title>
     <url>/2026/01/27/Rethinking-of-Vulkan-Raytracing-with-Rust/</url>
     <content><![CDATA[<p>新的一年，也要回望过去，重新思考一些以前的话题。</p>
