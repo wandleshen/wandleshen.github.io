@@ -20,6 +20,7 @@
     <title>我把四个 AI 编程 CLI 装进了一块 128×64 的 OLED</title>
     <url>/2026/08/02/%E6%88%91%E6%8A%8A%E5%9B%9B%E4%B8%AAAI%E7%BC%96%E7%A8%8BCLI%E8%A3%85%E8%BF%9B%E4%BA%86%E4%B8%80%E5%9D%97128%C3%9764%E7%9A%84OLED/</url>
     <content><![CDATA[<p>我做了一个叫 AgentDeck 的小项目：用一块 128×64 OLED、四个按钮和 RP2040 Zero，把多个 AI 编程 CLI 的运行状态压缩成一眼能扫完的桌面仪表盘。</p>
+<p>项目地址：<a href="https://github.com/wandleshen/AgentDeck">GitHub - AgentDeck</a></p>
 <span id="more"></span>
 <p>在新的公司里我的工作大概就是一个 AI 产品经理，把所有的需求交给 AI 然后进行不断的迭代验证。这就涉及到了一个多 Agent 管理的问题了，同时公司由于拥有无限量的 Copilot，所以我把其中的 gpt 代理出来到 Codex，Calude 代理出来到 CC，在又一次漏掉某个 Questionnaire 之后，我想出来了一个全新的项目。</p>
 <p>我真正想解决的不是“如何把 AI 对话搬到另一块屏幕”，而是一个更窄的问题：当多个 coding agent 同时工作时，我怎样用一眼就能扫完的方式知道谁在运行、谁已经结束、谁在等我，以及下一步应该去哪个终端？</p>
